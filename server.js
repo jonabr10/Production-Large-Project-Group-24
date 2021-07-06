@@ -39,6 +39,7 @@ app.post('/api/addcard', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
+// IMPORTANT: Cards Login
 app.post('/api/login', async (req, res, next) => {
     // incoming: login, password
     // outgoing: id, firstName, lastName, error
@@ -48,19 +49,21 @@ app.post('/api/login', async (req, res, next) => {
     const { login, password } = req.body;
     const db = client.db();
     const results = await
-        db.collection('Users').find({ Login: login, Password: password }).toArray();
+        db.collection('users').find({ userName: login, password: password }).toArray();
 
     var id = -1;
     var fn = '';
     var ln = '';
+    var email = '';
 
     if (results.length > 0) {
-        id = results[0].UserId;
-        fn = results[0].FirstName;
-        ln = results[0].LastName;
+        id = results[0].userId;
+        fn = results[0].firstName;
+        ln = results[0].lastName;
+        email = results[0].email
     }
 
-    var ret = { id: id, firstName: fn, lastName: ln, error: '' };
+    var ret = { id: id, firstName: fn, lastName: ln, email: email, error: '' };
     res.status(200).json(ret);
 });
 
