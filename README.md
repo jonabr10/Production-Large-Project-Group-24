@@ -29,8 +29,6 @@ Connecting to the mongoDB database
     <contents>
     MONGODB_URI="mongodb+srv://Admin:COP4331@cluster0.4b2nn.mongodb.net/Dev_Large_Project_DB?retryWrites=true&w=majority"
 
-<terminal cmd> npm install
-
 <terminal cmd> sudo npm start
     <caution> running the command may throw some errors
         <what if> Error: Cannot find module 'express'
@@ -79,16 +77,27 @@ Connecting to the Heroku Server
         yarn-debug.log*
         yarn-error.log*
 
-<terminal cmd> git config --global user.email "rick.jsventures.com"
+<terminal cmd> git config --global user.email "<your email>"
 
-<terminal cmd> git config --global user.name "Rick Leinecker"
+<terminal cmd> git config --global user.name "<your name>"
 
-<terminal cmd> heroku git:remote -a health-n-wellness-dev
+=======================
+Starting Local Testing!
+=======================
 
-<terminal cmd> sudo git add -A
+<please note> open two terminals!
 
-<terminal cmd> sudo git commit -am "Your Message Here"
+    <terminal one> navigate to root project directory
 
-<terminal cmd> git push heroku master 
+    <terminal two> navigate to frontend directory
 
+<terminal two cmd> npm install -g react-scripts
+
+<terminal two cmd> npm install
+
+<terminal one cmd> sudo npm start
+
+<terminal two cmd> sudo npm start
+
+  
 --->
