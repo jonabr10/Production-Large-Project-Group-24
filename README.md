@@ -29,7 +29,7 @@ Connecting to the mongoDB database
 
 <terminal cmd> touch .env
     <contents>
-    MONGODB_URI="mongodb+srv://Admin:COP4331@cluster0.4b2nn.mongodb.net/Dev_Large_Project_DB?retryWrites=true&w=majority"
+    MONGODB_URI="mongodb+srv://group24:COP4331@cluster0.5zgrn.mongodb.net/COP4331?retryWrites=true&w=majority"
 
 <terminal cmd> sudo npm start
     <caution> running the command may throw some errors
