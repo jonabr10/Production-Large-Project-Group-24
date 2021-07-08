@@ -9,10 +9,10 @@ Steps on setting up environment
 Things you should already have
 - nodejs
 - nodemon
-- react-app
-- heroku
 
-<double check> heroku --version 
+<double check> node --version / nodemon --version
+
+Make sure to create and checkout a new branch based off of main before proceeding!
 
 ==================================
 Connecting to the mongoDB database
