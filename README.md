@@ -12,7 +12,7 @@ Things you should already have
 
 <double check> node --version / nodemon --version
 
-Make sure to create and checkout a new branch based off of main before proceeding!
+*** Make sure to create and checkout a new branch based off of main before proceeding!!! ***
 
 ==================================
 Connecting to the mongoDB database
@@ -20,10 +20,12 @@ Connecting to the mongoDB database
 
 <go to> From the terminal/commandLine > navigate to project folder 
 
-<terminal cmd> touch .gitignore
-    <contents> 
-    node_modules
-    .env
+<if> You do not have a .gitignore with the following content
+    <terminal cmd> touch .gitignore
+        <contents> 
+        node_modules
+        .env
+        .DS_Store
 
 <terminal cmd> touch .env
     <contents>
@@ -50,32 +52,33 @@ Connecting to the Heroku Server
 
 <terminal cmd> heroku login
 
-<go to> frontend folder
-    <temrinal cmd> touch .gitignore
-        <contents>
-        # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+<if> You do not have a frontend/.gitignore with the following content
+    <go to> frontend folder
+        <terminal cmd> touch .gitignore
+            <contents>
+            # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-        # dependencies
-        /node_modules
-        /.pnp
-        .pnp.js
+            # dependencies
+            /node_modules
+            /.pnp
+            .pnp.js
 
-        # testing
-        /coverage
+            # testing
+            /coverage
 
-        # production
-        # /build
+            # production
+            # /build
 
-        # misc
-        .DS_Store
-        .env.local
-        .env.development.local
-        .env.test.local
-        .env.production.local
+            # misc
+            .DS_Store
+            .env.local
+            .env.development.local
+            .env.test.local
+            .env.production.local
 
-        npm-debug.log*
-        yarn-debug.log*
-        yarn-error.log*
+            npm-debug.log*
+            yarn-debug.log*
+            yarn-error.log*
 
 <terminal cmd> git config --global user.email "<your email>"
 
