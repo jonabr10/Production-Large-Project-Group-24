@@ -18,31 +18,9 @@ const MongoClient = require('mongodb').MongoClient;
 const client = new MongoClient(url);
 client.connect();
 
-app.post('/api/addcard', async (req, res, next) => {
-    // incoming: userId, color
-    // outgoing: error
-
-    const { userId, card } = req.body;
-    const newCard = { Card: card, UserId: userId };
-    var error = '';
-    try {
-        const db = client.db();
-        const result = db.collection('Cards').insertOne(newCard);
-    }
-
-    catch (e) {
-        error = e.toString();
-    }
-
-    cardList.push(card);
-    var ret = { error: error };
-    res.status(200).json(ret);
-});
-
-// IMPORTANT: Cards Login
+// Incoming: login, password
+// Outgoing: id, firstName, lastName, email, error
 app.post('/api/login', async (req, res, next) => {
-    // incoming: login, password
-    // outgoing: id, firstName, lastName, error
 
     var error = '';
 
@@ -61,31 +39,158 @@ app.post('/api/login', async (req, res, next) => {
         fn = results[0].firstName;
         ln = results[0].lastName;
         email = results[0].email
+
+        var ret = { id: id, firstName: fn, lastName: ln, email: email, error: '' };
     }
 
-    var ret = { id: id, firstName: fn, lastName: ln, email: email, error: '' };
+    else if (results.length <= 0) {
+        var ret = { id: id, firstName: fn, lastName: ln, email: email, error: 'Invalid Username/Password' };
+    }
+
     res.status(200).json(ret);
 });
 
-app.post('/api/searchcards', async (req, res, next) => {
-    // incoming: userId, search
-    // outgoing: results[], error
+// Incoming: alarm object
+// Outgoing: alarms[]
+function debugAlarmObject(alarmObj) {
+    console.log('alarm[] ' + typeof alarmObj._id + ' _id/ObjectId value: ' + alarmObj._id);
+    console.log('alarm[] ' + typeof alarmObj.userId + ' userId value: ' + alarmObj.userId);
+    console.log('alarm[] ' + typeof alarmObj.itemId + ' itemId value: ' + alarmObj.itemId);
+    console.log('alarm[] ' + typeof alarmObj.time + ' time value: ' + alarmObj.time);
+    console.log('alarm[] ' + typeof alarmObj.monday + ' monday value: ' + alarmObj.monday);
+    console.log('alarm[] ' + typeof alarmObj.tuesday + ' tuesday value: ' + alarmObj.tuesday);
+    console.log('alarm[] ' + typeof alarmObj.wednesday + ' wednesday value: ' + alarmObj.wednesday);
+    console.log('alarm[] ' + typeof alarmObj.thursday + ' thursday value: ' + alarmObj.thursday);
+    console.log('alarm[] ' + typeof alarmObj.friday + ' friday value: ' + alarmObj.friday);
+    console.log('alarm[] ' + typeof alarmObj.saturday + ' saturday value: ' + alarmObj.saturday);
+    console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
+}
+
+/*
+
+// Incoming: item objects
+// Outgoing: alarms[]
+async function getAlarms(itemResult) {
+
+    const db = client.db();
+    var _itemId = (itemResult._id.toString()).trim();
+
+    const alarmResults = await db.collection('alarms').find(
+        {
+            "itemId": _itemId
+        }
+    ).toArray();
+
+    var _ret = [];
+
+    // Debug: verify alarm object content
+    // debugAlarmObject(alarmResults[0]);
+
+    for (var i = 0; i < alarmResults.length; i++) {
+        _ret.push({
+            _id: alarmResults[i]._id,
+            userId: alarmResults[i].userId,
+            itemId: alarmResults[i].itemId,
+            time: alarmResults[i].time,
+            monday: alarmResults[i].monday,
+            tuesday: alarmResults[i].tuesday,
+            wednesday: alarmResults[i].wednesday,
+            thursday: alarmResults[i].thursday,
+            friday: alarmResults[i].friday,
+            saturday: alarmResults[i].saturday,
+            sunday: alarmResults[i].sunday
+        });
+    }
+
+    var ret = { alarms: _ret };
+    return ret;
+}
+
+*/
+
+// Incoming: userId, search
+// Outgoing: results[], error
+app.post('/api/search', async (req, res, next) => {
 
     var error = '';
     const { userId, search } = req.body;
 
     var _search = search.trim();
     const db = client.db();
-    const results = await db.collection('Cards').find({ "Card": { $regex: _search + '.*', $options: 'r' } }).toArray();
+    const itemResults = await db.collection('items').find(
+        {
+            $and: [
+                { "userId": userId },
+                { "item": { $regex: _search + '.*', $options: 'r' } }
+            ]
+        }
+    ).toArray();
 
     var _ret = [];
 
-    for (var i = 0; i < results.length; i++) {
-        _ret.push(results[i].Card);
+    if (itemResults > 0) {
+
+        for (var i = 0; i < itemResults.length; i++) {
+
+            if (itemResults[i].tracker == true) {
+
+                var _itemId = (itemResults[i]._id.toString()).trim();
+
+                const alarmResults = await db.collection('alarms').find(
+                    {
+                        "itemId": _itemId
+                    }
+                ).toArray();
+
+                var _alarms = [];
+
+                // Debug: verify alarm object content
+                // debugAlarmObject(alarmResults[0]);
+
+                for (var j = 0; j < alarmResults.length; j++) {
+                    _alarms.push({
+                        _id: alarmResults[j]._id,
+                        userId: alarmResults[j].userId,
+                        itemId: alarmResults[j].itemId,
+                        time: alarmResults[j].time,
+                        monday: alarmResults[j].monday,
+                        tuesday: alarmResults[j].tuesday,
+                        wednesday: alarmResults[j].wednesday,
+                        thursday: alarmResults[j].thursday,
+                        friday: alarmResults[j].friday,
+                        saturday: alarmResults[j].saturday,
+                        sunday: alarmResults[j].sunday
+                    });
+                }
+
+                _ret.push({
+                    _id: itemResults[i]._id,
+                    userId: itemResults[i].userId,
+                    item: itemResults[i].item,
+                    tracker: itemResults[i].tracker,
+                    alarms: _alarms
+                });
+            }
+
+            else if (itemResults[i].tracker == false) {
+                _ret.push({
+                    _id: itemResults[i]._id,
+                    userId: itemResults[i].userId,
+                    item: itemResults[i].item,
+                    tracker: itemResults[i].tracker,
+                });
+            }
+        }
+
+        var ret = { results: _ret, error: error };
+        res.status(200).json(ret);
     }
 
-    var ret = { results: _ret, error: error };
-    res.status(200).json(ret);
+    else {
+        var ret = { results: _ret, error: "No records found" };
+        res.status(200).json(ret);
+    }
+
 });
 
 app.use((req, res, next) => {
