@@ -128,7 +128,7 @@ app.post('/api/search', async (req, res, next) => {
 
     var _ret = [];
 
-    if (itemResults > 0) {
+    if (itemResults.length > 0) {
 
         for (var i = 0; i < itemResults.length; i++) {
 
