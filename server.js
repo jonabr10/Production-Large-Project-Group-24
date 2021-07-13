@@ -51,7 +51,7 @@ app.post('/api/login', async (req, res, next) => {
 });
 
 // Incoming: alarm object
-// Outgoing: alarms[]
+// Outgoing: none
 function debugAlarmObject(alarmObj) {
     console.log('alarm[] ' + typeof alarmObj._id + ' _id/ObjectId value: ' + alarmObj._id);
     console.log('alarm[] ' + typeof alarmObj.userId + ' userId value: ' + alarmObj.userId);
@@ -66,7 +66,37 @@ function debugAlarmObject(alarmObj) {
     console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
 }
 
-/*
+// Incoming: item objects
+// Outgoing: alarms[]
+async function getItem(userId, itemName) {
+
+    const db = client.db();
+    var _item = (itemName.toString()).trim();
+
+    const itemResults = await db.collection('items').find(
+        {
+            $and: [
+                { "userId": userId },
+                { "item": _item }
+            ]
+        }
+    ).toArray();
+
+    var _ret = [];
+
+    for (var i = 0; i < itemResults.length; i++) {
+        _ret.push({
+            _id: itemResults[i]._id,
+            userId: itemResults[i].userId,
+            item: itemResults[i].item,
+            tracker: itemResults[i].tracker,
+        });
+    }
+
+    var ret = { results: _ret, error: error };
+
+    return ret;
+}
 
 // Incoming: item objects
 // Outgoing: alarms[]
@@ -76,18 +106,16 @@ async function getAlarms(itemResult) {
     var _itemId = (itemResult._id.toString()).trim();
 
     const alarmResults = await db.collection('alarms').find(
-        {
-            "itemId": _itemId
-        }
+        { "itemId": _itemId }
     ).toArray();
 
-    var _ret = [];
+    var _retAlarms = [];
 
     // Debug: verify alarm object content
     // debugAlarmObject(alarmResults[0]);
 
     for (var i = 0; i < alarmResults.length; i++) {
-        _ret.push({
+        _retAlarms.push({
             _id: alarmResults[i]._id,
             userId: alarmResults[i].userId,
             itemId: alarmResults[i].itemId,
@@ -102,11 +130,8 @@ async function getAlarms(itemResult) {
         });
     }
 
-    var ret = { alarms: _ret };
-    return ret;
+    return _retAlarms;
 }
-
-*/
 
 // Incoming: userId, search
 // Outgoing: results[], error
@@ -134,34 +159,7 @@ app.post('/api/search', async (req, res, next) => {
 
             if (itemResults[i].tracker == true) {
 
-                var _itemId = (itemResults[i]._id.toString()).trim();
-
-                const alarmResults = await db.collection('alarms').find(
-                    {
-                        "itemId": _itemId
-                    }
-                ).toArray();
-
-                var _alarms = [];
-
-                // Debug: verify alarm object content
-                // debugAlarmObject(alarmResults[0]);
-
-                for (var j = 0; j < alarmResults.length; j++) {
-                    _alarms.push({
-                        _id: alarmResults[j]._id,
-                        userId: alarmResults[j].userId,
-                        itemId: alarmResults[j].itemId,
-                        time: alarmResults[j].time,
-                        monday: alarmResults[j].monday,
-                        tuesday: alarmResults[j].tuesday,
-                        wednesday: alarmResults[j].wednesday,
-                        thursday: alarmResults[j].thursday,
-                        friday: alarmResults[j].friday,
-                        saturday: alarmResults[j].saturday,
-                        sunday: alarmResults[j].sunday
-                    });
-                }
+                var _alarms = await getAlarms(itemResults[i]);
 
                 _ret.push({
                     _id: itemResults[i]._id,
