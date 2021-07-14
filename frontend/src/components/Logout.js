@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, BrowserRouter  } from 'react-router-dom';
-import './css/Menu.css'
 
 class Logout extends React.Component {
     render() {

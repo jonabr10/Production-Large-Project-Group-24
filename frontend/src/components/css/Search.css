@@ -1,6 +1,6 @@
 .grid-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     grid-gap: 30px;
     height: 475px;
 }
@@ -10,14 +10,16 @@
     height: 50%;
 }
 
-.new{
+.result{
+    grid-column-start: 2;
     display: inline-block;
     overflow: hidden;
     text-align: center;
     height: 100%;
 }
 
-.current{
+.bar{
+    grid-column-start: 1;
     overflow-x: auto;
     text-align: center;
     height: 100%;
