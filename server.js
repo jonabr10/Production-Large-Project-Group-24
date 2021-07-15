@@ -55,22 +55,6 @@ app.post('/api/login', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
-// Incoming: alarm object
-// Outgoing: none
-function debugAlarmObject(alarmObj) {
-    console.log('alarm[] ' + typeof alarmObj._id + ' _id/ObjectId value: ' + alarmObj._id);
-    console.log('alarm[] ' + typeof alarmObj.userId + ' userId value: ' + alarmObj.userId);
-    console.log('alarm[] ' + typeof alarmObj.itemId + ' itemId value: ' + alarmObj.itemId);
-    console.log('alarm[] ' + typeof alarmObj.time + ' time value: ' + alarmObj.time);
-    console.log('alarm[] ' + typeof alarmObj.monday + ' monday value: ' + alarmObj.monday);
-    console.log('alarm[] ' + typeof alarmObj.tuesday + ' tuesday value: ' + alarmObj.tuesday);
-    console.log('alarm[] ' + typeof alarmObj.wednesday + ' wednesday value: ' + alarmObj.wednesday);
-    console.log('alarm[] ' + typeof alarmObj.thursday + ' thursday value: ' + alarmObj.thursday);
-    console.log('alarm[] ' + typeof alarmObj.friday + ' friday value: ' + alarmObj.friday);
-    console.log('alarm[] ' + typeof alarmObj.saturday + ' saturday value: ' + alarmObj.saturday);
-    console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
-}
-
 // Incoming: item objects
 // Outgoing: alarms[]
 async function getItem(userId, itemName) {
@@ -99,6 +83,22 @@ async function getItem(userId, itemName) {
     }
 
     return _retItems;
+}
+
+// Incoming: alarm object
+// Outgoing: none
+function debugAlarmObject(alarmObj) {
+    console.log('alarm[] ' + typeof alarmObj._id + ' _id/ObjectId value: ' + alarmObj._id);
+    console.log('alarm[] ' + typeof alarmObj.userId + ' userId value: ' + alarmObj.userId);
+    console.log('alarm[] ' + typeof alarmObj.itemId + ' itemId value: ' + alarmObj.itemId);
+    console.log('alarm[] ' + typeof alarmObj.time + ' time value: ' + alarmObj.time);
+    console.log('alarm[] ' + typeof alarmObj.monday + ' monday value: ' + alarmObj.monday);
+    console.log('alarm[] ' + typeof alarmObj.tuesday + ' tuesday value: ' + alarmObj.tuesday);
+    console.log('alarm[] ' + typeof alarmObj.wednesday + ' wednesday value: ' + alarmObj.wednesday);
+    console.log('alarm[] ' + typeof alarmObj.thursday + ' thursday value: ' + alarmObj.thursday);
+    console.log('alarm[] ' + typeof alarmObj.friday + ' friday value: ' + alarmObj.friday);
+    console.log('alarm[] ' + typeof alarmObj.saturday + ' saturday value: ' + alarmObj.saturday);
+    console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
 }
 
 // Incoming: item objects
@@ -188,6 +188,9 @@ app.post('/api/search', async (req, res, next) => {
     }
 
     else {
+        var _test = await getItem(userId, _search);
+        console.log('Testing length of empty array: ' + _test.length);
+
         var ret = { results: _ret, error: "No records found" };
         res.status(200).json(ret);
     }
@@ -221,5 +224,3 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(PORT, () => {
     console.log('Server listening on port ' + PORT);
 });
-
-// This is a test after pulling from master!
