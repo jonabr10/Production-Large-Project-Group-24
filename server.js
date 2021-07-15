@@ -23,6 +23,15 @@ client.connect();
 // - prescription
 // - hydration
 
+app.post('/api/deleteItem', async (req, res, next) => {
+    var error = '';
+
+    const { userId, item } = req.body;
+    const db = client.db();
+    const results = await
+
+});
+
 // Incoming: login, password
 // Outgoing: id, firstName, lastName, email, error
 app.post('/api/login', async (req, res, next) => {
