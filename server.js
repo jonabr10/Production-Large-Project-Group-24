@@ -18,6 +18,11 @@ const MongoClient = require('mongodb').MongoClient;
 const client = new MongoClient(url);
 client.connect();
 
+// 3 categories:
+// - Workout 
+// - prescription
+// - hydration
+
 // Incoming: login, password
 // Outgoing: id, firstName, lastName, email, error
 app.post('/api/login', async (req, res, next) => {
@@ -82,10 +87,10 @@ async function getItem(userId, itemName) {
         }
     ).toArray();
 
-    var _ret = [];
+    var _retItems = [];
 
     for (var i = 0; i < itemResults.length; i++) {
-        _ret.push({
+        _retItems.push({
             _id: itemResults[i]._id,
             userId: itemResults[i].userId,
             item: itemResults[i].item,
@@ -93,9 +98,7 @@ async function getItem(userId, itemName) {
         });
     }
 
-    var ret = { results: _ret, error: error };
-
-    return ret;
+    return _retItems;
 }
 
 // Incoming: item objects
@@ -218,6 +221,5 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(PORT, () => {
     console.log('Server listening on port ' + PORT);
 });
-
 
 // This is a test after pulling from master!
