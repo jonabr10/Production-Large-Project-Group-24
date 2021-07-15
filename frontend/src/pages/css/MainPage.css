@@ -93,14 +93,6 @@ div.upper > img {
   
 }
 
-.heart {
-  max-width: 70%;
-  max-height: 80%; 
-  margin-top: 10px;
-  vertical-align:middle;
-
-}
-
 .leftpan{
   position: sticky;
   width: 15%;

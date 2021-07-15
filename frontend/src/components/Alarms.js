@@ -4,8 +4,8 @@ import './css/Menu.css';
 function Alarms()
 {
     return(
-        <div class="grid-container">
-            <div class="grid-child current">
+        <div class='grid-container'>
+            <div class='grid-child current'>
                 <h3>Alarms</h3>
                 <p>12:00 PM</p>
                 <p>2:00 PM</p>

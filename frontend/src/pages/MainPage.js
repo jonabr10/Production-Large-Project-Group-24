@@ -25,7 +25,7 @@ const MainPage = () => {
                                 
                                 <Account />
                             </div>
-                            <Tabs defaultTab="vertical-tab-one" vertical className="vertical-tabs">
+                            <Tabs defaultTab="vertical-tab-one" vertical class="vertical-tabs">
                                 <TabList>
                                     <Tab tabFor="vertical-tab-zero">Search</Tab>
                                     <Tab tabFor="vertical-tab-one">Prescription</Tab>

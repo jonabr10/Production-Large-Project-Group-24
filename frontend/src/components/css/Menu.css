@@ -2,12 +2,12 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: 30px;
-    height: 475px;
+    height: 450px;
 }
 
 .grid-child{
     overflow-x: hidden;
-    height: 50%;
+    height: 100%;
 }
 
 .new{
@@ -18,12 +18,12 @@
 }
 
 .current{
-    overflow-x: auto;
+    overflow: auto;
     text-align: center;
     height: 100%;
 }
 
-inputs{
+.inputs{
    font-weight:bold; 
 }
 
