@@ -3,7 +3,6 @@
 OPEN ME IN VSCODE OR ANY OTHER EDITOR TO SEE INSTRUCTIONS!
 
 <!---
-
 Steps on setting up environment
 
 Things you should already have
