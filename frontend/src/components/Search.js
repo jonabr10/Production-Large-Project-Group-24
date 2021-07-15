@@ -4,12 +4,12 @@ import './css/Search.css';
 function Search()
 {
     return(
-        <div className="search-container">
-            <div className="search-child bar">
+        <div class="search-container">
+            <div class="search-child bar">
                 <h3>Search</h3>
             </div>
 
-            <div className="search-child sresult">
+            <div class="search-child sresult">
                 <h3>Results</h3>
                 <form>
                     <inputs>Water Drank in Ounces</inputs>

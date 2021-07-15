@@ -4,8 +4,8 @@ import './css/Menu.css';
 function Alarms()
 {
     return(
-        <div className='grid-container'>
-            <div className='grid-child current'>
+        <div class='grid-container'>
+            <div class='grid-child current'>
                 <h3>Alarms</h3>
                 <p>12:00 PM</p>
                 <p>2:00 PM</p>
@@ -37,7 +37,7 @@ function Alarms()
                 <p>4:00 PM</p>
             </div>
 
-            <div className="grid-child new">
+            <div class="grid-child new">
                 <h3>New Alarm</h3>
                 <form>
                     <inputs>Name </inputs>
@@ -52,45 +52,45 @@ function Alarms()
                     <br></br>
                     <inputs>Dates </inputs>
                     <br></br>
-                    <div className="checkbox-label">
+                    <div class="checkbox-label">
                         <label>Sunday</label>
-                        <div className="checkbox-container">
+                        <div class="checkbox-container">
                         <input type='checkbox' name='sun'/>
                         </div>
                     </div>
-                    <div className="checkbox-label">
+                    <div class="checkbox-label">
                         <label>Monday</label>
-                        <div className="checkbox-container">
+                        <div class="checkbox-container">
                         <input type='checkbox' name='mon'/>
                         </div>
                     </div>
-                    <div className="checkbox-label">
+                    <div class="checkbox-label">
                         <label>Tuesday</label>
-                        <div className="checkbox-container">
+                        <div class="checkbox-container">
                         <input type='checkbox' name='tue'/>
                         </div>
                     </div>
-                    <div className="checkbox-label">
+                    <div class="checkbox-label">
                         <label>Wednesday</label>
-                        <div className="checkbox-container">
+                        <div class="checkbox-container">
                         <input type='checkbox' name='wed'/>
                         </div>
                     </div>
-                    <div claclassNamess="checkbox-label">
+                    <div class="checkbox-label">
                         <label>Thursday</label>
-                        <div className="checkbox-container">
+                        <div class="checkbox-container">
                         <input type='checkbox' name='thr'/>
                         </div>
                     </div>
-                    <div className="checkbox-label">
+                    <div class="checkbox-label">
                         <label>Friday</label>
-                        <div className="checkbox-container">
+                        <div class="checkbox-container">
                         <input type='checkbox' name='fri'/>
                         </div>
                     </div>
-                    <div className="checkbox-label">
+                    <div class="checkbox-label">
                         <label>Saturday</label>
-                        <div className="checkbox-container">
+                        <div class="checkbox-container">
                         <input type='checkbox' name='sat'/>
                         </div>
                     </div>
