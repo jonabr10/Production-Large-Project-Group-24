@@ -1,45 +1,48 @@
 .search-container {
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-gap: 30px;
     height: 475px;
+    
 }
 
 .search-child{
-    overflow-x: hidden;
-    height: 100%;
+    overflow-x: auto;
+    height: 50%;
 }
 
 .sresult{
-    grid-column-start: 2;
-    display: inline-block;
-    overflow: hidden;
+    overflow-x: auto;
     text-align: center;
-    height: 100%;
+    height: 77%;
 }
 
 .bar{
-    grid-column-start: 1;
     overflow-x: auto;
     text-align: center;
-    height: 100%;
+    height: 20%;
 }
 
 inputs{
    font-weight:bold; 
 }
 
-.checkbox-label, .select-label{
-    display: inline-block;
-    padding: 2px;
+.searchbar{
+    width: 50%;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px #C3F1EE; 
+    border-radius: 18px;
 
 }
-  
-.checkbox-container {
-    text-align: center;
+
+::-webkit-scrollbar-thumb {
+    background: #ffbdad; 
+    border-radius: 10px;
 }
-  
-.select-label label {
-    display: block;
-    text-align:center;
+
+::-webkit-scrollbar-thumb:hover {
+    background: #C3F1EE; 
 }
