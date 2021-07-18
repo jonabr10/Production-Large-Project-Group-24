@@ -1,13 +1,24 @@
-//import logo from './logo.svg';
-import './App.css';
 import React from 'react';
-//import MainPage from './pages/MainPage';
-import Login from './pages/Login';
-import './pages/css/Login.css'
+import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
+import { BrowserRouter as Router, Switch, Route, Link, Redirect } from "react-router-dom";
+
+import LoginSignupPage from "./pages/LoginSignupPage";
+import MainPage from "./pages/MainPage";
 
 function App() {
   return (
-    <Login />
+    <Router >
+      <Switch>
+        <Route path="/" exact>
+          <LoginSignupPage />
+        </Route>
+        <Route path="/main-page" exact>
+          <MainPage />
+        </Route>
+        <Redirect to="/" />
+      </Switch>  
+    </Router>
   );
 }
 

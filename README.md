@@ -103,8 +103,8 @@ Starting Local Testing!
 
 
 Packages installed Danny:
-npm install react-bootstrap-validation --save
+npm install bootstrap --save
 npm install react-web-tabs --save
-
+npm install --save react-router-dom
   
 --->
