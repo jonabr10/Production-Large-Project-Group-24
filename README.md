@@ -101,5 +101,10 @@ Starting Local Testing!
 
 <terminal two cmd> sudo npm start
 
+
+Packages installed Danny:
+npm install react-bootstrap-validation --save
+npm install react-web-tabs --save
+
   
 --->
