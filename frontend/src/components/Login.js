@@ -1,6 +1,7 @@
 import React, { Component } from "react";
+import ReactDOM from "react-dom";
 import './css/LoginAndSignup.css';
-import { Modal } from 'antd';
+import { Modal, Alert } from 'antd';
 
 export default class Login extends Component {
     constructor(props)
@@ -30,13 +31,22 @@ export default class Login extends Component {
 
     areFieldsValid = () => 
     {
+        let validFlag = true;
+
         if (!this.areAllFieldsFilled())
         {
-            this.showErrorMessage('Empty login information', 'Please fill out all the information.');
-            return false;
+            const element = <Alert message= "Please fill out all information." banner />;
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlert'));
+
+            validFlag = false;
+        }
+        else
+        {
+            const element = '';
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlert'));
         }
 
-        return true;
+        return validFlag;
     }
 
     areAllFieldsFilled = () => 
@@ -70,6 +80,8 @@ export default class Login extends Component {
                 
                 <br></br>
                 <button type="button" className="btn btn-dark btn-lg btn-block" onClick={() => this.doLogin()}>Sign in</button>
+                <div id="invalidFieldsAlert"></div>
+
                 <p className="forgot-password text-right">
                     Forgot <a href="#">password?</a>
                 </p>

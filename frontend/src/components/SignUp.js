@@ -1,6 +1,7 @@
 import React, { Component } from "react";
+import ReactDOM from "react-dom";
 import './css/LoginAndSignup.css';
-import { Modal } from 'antd';
+import { Modal, Alert } from 'antd';
 
 export default class SignUp extends Component {
     constructor(props)
@@ -23,7 +24,7 @@ export default class SignUp extends Component {
     }
     
     doRegistration = () =>
-    {
+    {        
         if (this.areFieldsValid())
         {
             alert('hi');
@@ -34,25 +35,48 @@ export default class SignUp extends Component {
     
     areFieldsValid = () => 
     {
+        let validFlag = true;
+
         if (!this.areAllFieldsFilled())
         {
-            this.showErrorMessage('Empty registration information', 'Please fill out all the information.');
-            return false;
+            const element = <Alert message= "Please fill out all information." banner />;
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlert'));
+
+            validFlag = false;
+        }
+        else
+        {
+            const element = '';
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlert'));
         }
 
         if (!this.isValidEmail())
         {
-            this.showErrorMessage('Invalid email', 'Please enter a valid email.');
-            return false;
+            const element = <Alert message= "Please enter a valid email." banner />;
+            ReactDOM.render(element, document.getElementById('invalidEmailAlert'));
+
+            validFlag = false;
+        }
+        else
+        {
+            const element = '';
+            ReactDOM.render(element, document.getElementById('invalidEmailAlert'));
         }
         
         if (!this.arePasswordsMatching())
         {
-            this.showErrorMessage('Passwords not matching', 'Please ensure password and confirm password are matching.');
-            return false;
+            const element = <Alert message= "Please ensure passwords are matching." banner />;
+            ReactDOM.render(element, document.getElementById('invalidPasswordAlert'));
+
+            validFlag = false;
+        }
+        else
+        {
+            const element = '';
+            ReactDOM.render(element, document.getElementById('invalidPasswordAlert'));
         }
         
-        return true;
+        return validFlag;
     }
 
     areAllFieldsFilled = () => 
@@ -100,6 +124,7 @@ export default class SignUp extends Component {
                 <div className="form-group">
                     <label>Email</label>
                     <input type="email" name="email" className="form-control" placeholder="Enter email" maxLength="50" onChange={this.handleInputChange} />
+                    <div id="invalidEmailAlert"></div>
                 </div>
 
                 <div className="form-group">
@@ -110,6 +135,7 @@ export default class SignUp extends Component {
                 <div className="form-group">
                     <label>Password</label>
                     <input type="password" name="password" className="form-control" placeholder="Enter password" maxLength="50" onChange={this.handleInputChange} />
+                    <div id="invalidPasswordAlert"></div>
                 </div>
 
                 <div className="form-group">
@@ -119,6 +145,8 @@ export default class SignUp extends Component {
 
                 <br></br>
                 <button type="button" className="btn btn-dark btn-lg btn-block" onClick={() => this.doRegistration()}>Register</button>
+                <div id="invalidFieldsAlert"></div>
+
                 <p className="forgot-password text-right">
                     Already registered <a href="#">log in?</a>
                 </p>
