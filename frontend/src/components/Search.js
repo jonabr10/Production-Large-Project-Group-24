@@ -11,9 +11,9 @@ function Search()
                     <input type='text' class='searchbar' name='search'/>
                     <button>Search</button>
                 </form>
+                <h3>Results</h3>
             </div>
             <div class="search-child sresult">
-                <h3>Results</h3>
                 <p>12:00 PM</p>
                 <p>2:00 PM</p>
                 <p>3:00 PM</p>

@@ -4,20 +4,20 @@
 }
 
 .search-child{
-    overflow-x: auto;
+    overflow-x: hidden;
     height: 50%;
 }
 
 .sresult{
     overflow-x: auto;
     text-align: center;
-    height: 77%;
+    height: 68%;
 }
 
 .bar{
-    overflow-x: auto;
+    overflow: hidden;
     text-align: center;
-    height: 20%;
+    height: 30%;
 }
 
 inputs{
