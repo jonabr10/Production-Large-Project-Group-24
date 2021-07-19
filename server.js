@@ -51,24 +51,22 @@ async function getUser(userName, email) {
     return userResults;
 }
 
+// Incoming: new user credentials
+// Outgoing: none
 app.post('/api/register', async (req, res, next) => {
 
     const { firstName, lastName, userName, password, email } = req.body;
 
-    var isDuplicate = await getUser(userName, password);
+    var isTheNewUserDuplicate = await getUser(userName, password);
 
-    console.log(isDuplicate == null);
+    if (!isTheNewUserDuplicate) {
 
-    if (!isDuplicate) {
-
-        console.log("YOU GOT HERE!");
-
-        const newUser = { firstName: firstName, lastName: lastName, userName: userName, password: password, email: email }
+        const registerNewUser = { firstName: firstName, lastName: lastName, userName: userName, password: password, email: email }
         var error = '';
 
         try {
             const db = client.db();
-            const result = db.collection('users').insertOne(newUser);
+            db.collection('users').insertOne(registerNewUser);
         } catch (e) {
             error = e.toString();
         }
@@ -76,7 +74,8 @@ app.post('/api/register', async (req, res, next) => {
         var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: '' };
     }
 
-    else if (isDuplicate) {
+    else if (isTheNewUserDuplicate) {
+
         var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: 'User already exists please login instead' };
     }
 
