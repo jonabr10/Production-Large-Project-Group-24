@@ -18,31 +18,146 @@ const MongoClient = require('mongodb').MongoClient;
 const client = new MongoClient(url);
 client.connect();
 
-app.post('/api/addcard', async (req, res, next) => {
-    // incoming: userId, color
-    // outgoing: error
+// 3 categories:
+// - Workout 
+// - prescription
+// - hydration
 
-    const { userId, card } = req.body;
-    const newCard = { Card: card, UserId: userId };
-    var error = '';
-    try {
-        const db = client.db();
-        const result = db.collection('Cards').insertOne(newCard);
+// app.post('/api/deleteItem', async (req, res, next) => {
+//     var error = '';
+
+//     const { userId, item } = req.body;
+//     const db = client.db();
+//     const results = await
+
+// });
+
+// Incoming: user object
+// Outgoing: users[]
+async function getUser(userName, email) {
+    const db = client.db();
+    var _userName = (userName.toString()).trim();
+    var _email = (email.toString()).trim();
+
+    const userResults = await db.collection('users').findOne(
+        {
+            $or: [
+                { "userName": _userName },
+                { "email": _email }
+            ]
+        }
+    )
+
+    return userResults;
+}
+
+// Incoming: new user credentials
+// Outgoing: none
+app.post('/api/register', async (req, res, next) => {
+
+    const { firstName, lastName, userName, password, email } = req.body;
+
+    var isTheNewUserDuplicate = await getUser(userName, password);
+
+    if (!isTheNewUserDuplicate) {
+
+        const registerNewUser = { firstName: firstName, lastName: lastName, userName: userName, password: password, email: email }
+        var error = '';
+
+        try {
+            const db = client.db();
+            db.collection('users').insertOne(registerNewUser);
+        } catch (e) {
+            error = e.toString();
+        }
+
+        var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: '' };
     }
 
-    catch (e) {
-        error = e.toString();
+    else if (isTheNewUserDuplicate) {
+
+        var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: 'User already exists please login instead' };
     }
 
-    cardList.push(card);
-    var ret = { error: error };
     res.status(200).json(ret);
 });
 
-// IMPORTANT: Cards Login
+
+app.post('/api/addItem' , async (req, res, next) => {
+
+    const { userId, itemName, tracker, _id } = req.body;
+
+    var itemfound = await getItem(userId, itemName);
+
+    if (itemfound.length == 0) {
+
+        const itemadd = { userId: userId, _id: _id, itemName: itemName, tracker: tracker}
+        var error = '';
+
+        try {
+
+            const db = client.db();
+            db.collection('items').insertOne(itemadd);
+
+        } catch (e) {
+
+            error = e.toString();
+        }
+
+        var ret = { userId: userId, _id: _id, itemName: itemName, tracker: tracker, error: '' };
+    }
+
+    else if (itemfound.length > 0) {
+
+        var ret = { userId: userId, _id: _id, itemName: itemName, tracker: tracker, error: 'Item already exists' };
+    }
+
+    res.status(200).json(ret);
+
+    
+});
+
+app.post('/api/addAlarm' , async (req, res, next) => {
+
+    const { userId, _id, itemId, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+
+    var alarmfound = await getAlarms();
+
+    if (alarmfound.length == 0) {
+
+        const alarmadd = { userId: userId, _id: _id, itemId: itemId, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday }
+        var error = '';
+
+        try {
+
+            const db = client.db();
+            db.collection('alarms').insertOne(alarmadd);
+
+        } catch (e) {
+
+            error = e.toString();
+        }
+
+        var ret = {userId: userId, _id: _id, itemId: itemId, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday , error: '' };
+    }
+
+    else if (alarmfound.length > 0) {
+
+        var ret = { userId: userId, _id: _id, itemId: itemId, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday , error: 'Alarm already exists' };
+    }
+
+    res.status(200).json(ret);
+
+    
+});
+
+
+
+
+
+// Incoming: login, password
+// Outgoing: id, firstName, lastName, email, error
 app.post('/api/login', async (req, res, next) => {
-    // incoming: login, password
-    // outgoing: id, firstName, lastName, error
 
     var error = '';
 
@@ -61,31 +176,157 @@ app.post('/api/login', async (req, res, next) => {
         fn = results[0].firstName;
         ln = results[0].lastName;
         email = results[0].email
+
+        var ret = { id: id, firstName: fn, lastName: ln, email: email, error: '' };
     }
 
-    var ret = { id: id, firstName: fn, lastName: ln, email: email, error: '' };
+    else if (results.length <= 0) {
+        var ret = { id: id, firstName: fn, lastName: ln, email: email, error: 'Invalid Username/Password' };
+    }
+
     res.status(200).json(ret);
 });
 
-app.post('/api/searchcards', async (req, res, next) => {
-    // incoming: userId, search
-    // outgoing: results[], error
+// Incoming: item objects
+// Outgoing: alarms[]
+async function getItem(userId, itemName) {
+
+    const db = client.db();
+    var _item = (itemName.toString()).trim();
+
+    const itemResults = await db.collection('items').find(
+        {
+            $and: [
+                { "userId": userId },
+                { "item": _item }
+            ]
+        }
+    ).toArray();
+
+    var _retItems = [];
+
+    for (var i = 0; i < itemResults.length; i++) {
+        _retItems.push({
+            _id: itemResults[i]._id,
+            userId: itemResults[i].userId,
+            item: itemResults[i].item,
+            tracker: itemResults[i].tracker,
+        });
+    }
+
+    return _retItems;
+}
+
+// Incoming: alarm object
+// Outgoing: none
+function debugAlarmObject(alarmObj) {
+    console.log('alarm[] ' + typeof alarmObj._id + ' _id/ObjectId value: ' + alarmObj._id);
+    console.log('alarm[] ' + typeof alarmObj.userId + ' userId value: ' + alarmObj.userId);
+    console.log('alarm[] ' + typeof alarmObj.itemId + ' itemId value: ' + alarmObj.itemId);
+    console.log('alarm[] ' + typeof alarmObj.time + ' time value: ' + alarmObj.time);
+    console.log('alarm[] ' + typeof alarmObj.monday + ' monday value: ' + alarmObj.monday);
+    console.log('alarm[] ' + typeof alarmObj.tuesday + ' tuesday value: ' + alarmObj.tuesday);
+    console.log('alarm[] ' + typeof alarmObj.wednesday + ' wednesday value: ' + alarmObj.wednesday);
+    console.log('alarm[] ' + typeof alarmObj.thursday + ' thursday value: ' + alarmObj.thursday);
+    console.log('alarm[] ' + typeof alarmObj.friday + ' friday value: ' + alarmObj.friday);
+    console.log('alarm[] ' + typeof alarmObj.saturday + ' saturday value: ' + alarmObj.saturday);
+    console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
+}
+
+// Incoming: item objects
+// Outgoing: alarms[]
+async function getAlarms(itemResult) {
+
+    const db = client.db();
+    var _itemId = (itemResult._id.toString()).trim();
+
+    const alarmResults = await db.collection('alarms').find(
+        { "itemId": _itemId }
+    ).toArray();
+
+    var _retAlarms = [];
+
+    // Debug: verify alarm object content
+    // debugAlarmObject(alarmResults[0]);
+
+    for (var i = 0; i < alarmResults.length; i++) {
+        _retAlarms.push({
+            _id: alarmResults[i]._id,
+            userId: alarmResults[i].userId,
+            itemId: alarmResults[i].itemId,
+            time: alarmResults[i].time,
+            monday: alarmResults[i].monday,
+            tuesday: alarmResults[i].tuesday,
+            wednesday: alarmResults[i].wednesday,
+            thursday: alarmResults[i].thursday,
+            friday: alarmResults[i].friday,
+            saturday: alarmResults[i].saturday,
+            sunday: alarmResults[i].sunday
+        });
+    }
+
+    return _retAlarms;
+}
+
+// Incoming: userId, search
+// Outgoing: results[], error
+app.post('/api/search', async (req, res, next) => {
 
     var error = '';
     const { userId, search } = req.body;
 
     var _search = search.trim();
     const db = client.db();
-    const results = await db.collection('Cards').find({ "Card": { $regex: _search + '.*', $options: 'r' } }).toArray();
+    const itemResults = await db.collection('items').find(
+        {
+            $and: [
+                { "userId": userId },
+                { "item": { $regex: _search + '.*', $options: 'r' } }
+            ]
+        }
+    ).toArray();
 
     var _ret = [];
 
-    for (var i = 0; i < results.length; i++) {
-        _ret.push(results[i].Card);
+    if (itemResults.length > 0) {
+
+        for (var i = 0; i < itemResults.length; i++) {
+
+            if (itemResults[i].tracker == true) {
+
+                var _alarms = await getAlarms(itemResults[i]);
+
+                _ret.push({
+                    _id: itemResults[i]._id,
+                    userId: itemResults[i].userId,
+                    item: itemResults[i].item,
+                    tracker: itemResults[i].tracker,
+                    alarms: _alarms
+                });
+            }
+
+            else if (itemResults[i].tracker == false) {
+                _ret.push({
+                    _id: itemResults[i]._id,
+                    userId: itemResults[i].userId,
+                    item: itemResults[i].item,
+                    tracker: itemResults[i].tracker,
+                });
+            }
+        }
+
+        var ret = { results: _ret, error: error };
+        res.status(200).json(ret);
     }
 
-    var ret = { results: _ret, error: error };
-    res.status(200).json(ret);
+    else {
+        var _test = await getItem(userId, _search);
+        console.log('Testing length of empty array: ' + _test.length);
+
+        var ret = { results: _ret, error: "No records found" };
+        res.status(200).json(ret);
+    }
+
 });
 
 app.use((req, res, next) => {
@@ -115,6 +356,3 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(PORT, () => {
     console.log('Server listening on port ' + PORT);
 });
-
-
-// This is a test after pulling from master!
