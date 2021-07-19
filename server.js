@@ -23,6 +23,66 @@ client.connect();
 // - prescription
 // - hydration
 
+// app.post('/api/deleteItem', async (req, res, next) => {
+//     var error = '';
+
+//     const { userId, item } = req.body;
+//     const db = client.db();
+//     const results = await
+
+// });
+
+// Incoming: user object
+// Outgoing: users[]
+async function getUser(userName, email) {
+    const db = client.db();
+    var _userName = (userName.toString()).trim();
+    var _email = (email.toString()).trim();
+
+    const userResults = await db.collection('users').findOne(
+        {
+            $or: [
+                { "userName": _userName },
+                { "email": _email }
+            ]
+        }
+    )
+
+    return userResults;
+}
+
+app.post('/api/register', async (req, res, next) => {
+
+    const { firstName, lastName, userName, password, email } = req.body;
+
+    var isDuplicate = await getUser(userName, password);
+
+    console.log(isDuplicate == null);
+
+    if (!isDuplicate) {
+
+        console.log("YOU GOT HERE!");
+
+        const newUser = { firstName: firstName, lastName: lastName, userName: userName, password: password, email: email }
+        var error = '';
+
+        try {
+            const db = client.db();
+            const result = db.collection('users').insertOne(newUser);
+        } catch (e) {
+            error = e.toString();
+        }
+
+        var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: '' };
+    }
+
+    else if (isDuplicate) {
+        var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: 'User already exists please login instead' };
+    }
+
+    res.status(200).json(ret);
+});
+
 // Incoming: login, password
 // Outgoing: id, firstName, lastName, email, error
 app.post('/api/login', async (req, res, next) => {
