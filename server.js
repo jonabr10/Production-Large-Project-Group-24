@@ -19,7 +19,7 @@ const client = new MongoClient(url);
 client.connect();
 
 // 3 categories:
-// - Workout 
+// - Workout
 // - prescription
 // - hydration
 
@@ -31,6 +31,56 @@ client.connect();
 //     const results = await
 
 // });
+
+// Incoming: user object
+// Outgoing: users[]
+async function getUser(userName, email) {
+    const db = client.db();
+    var _userName = (userName.toString()).trim();
+    var _email = (email.toString()).trim();
+
+    const userResults = await db.collection('users').findOne(
+        {
+            $or: [
+                { "userName": _userName },
+                { "email": _email }
+            ]
+        }
+    )
+
+    return userResults;
+}
+
+// Incoming: new user credentials
+// Outgoing: none
+app.post('/api/register', async (req, res, next) => {
+
+    const { firstName, lastName, userName, password, email } = req.body;
+
+    var isTheNewUserDuplicate = await getUser(userName, password);
+
+    if (!isTheNewUserDuplicate) {
+
+        const registerNewUser = { firstName: firstName, lastName: lastName, userName: userName, password: password, email: email }
+        var error = '';
+
+        try {
+            const db = client.db();
+            db.collection('users').insertOne(registerNewUser);
+        } catch (e) {
+            error = e.toString();
+        }
+
+        var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: '' };
+    }
+
+    else if (isTheNewUserDuplicate) {
+
+        var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: 'User already exists please login instead' };
+    }
+
+    res.status(200).json(ret);
+});
 
 // Incoming: login, password
 // Outgoing: id, firstName, lastName, email, error
