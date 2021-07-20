@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import './css/LoginAndSignup.css';
-import { Modal, Alert } from 'antd';
+import { Modal, Alert, notification } from 'antd';
 
 export default class Login extends Component {
     constructor(props)
@@ -23,10 +23,57 @@ export default class Login extends Component {
     {
         if (this.areFieldsValid())
         {
-            alert('hi');
+            let pathBuilder = require('../Path');
+            
+            let loginPayload = 
+            {
+                login: this.state.username,
+                password: this.state.password
+            }
+
+            let httpRequest = 
+            {
+                method: 'post',
+                body: JSON.stringify(loginPayload),
+                headers: {'Content-Type': 'application/json; charset=utf-8'}
+            }
+            
+            fetch(pathBuilder.buildPath('api/login'), httpRequest)
+            .then(this.checkResponse)
+            .catch(function(error) { console.log(error); })
+            .then(response => response.json())
+            .then(responseData =>
+            {
+                if (responseData.error.length === 0)
+                {
+                    let userDataStore = 
+                    {
+                        id: responseData.id,
+                        firstName: responseData.firstName,
+                        lastName: responseData.lastName,
+                        email: responseData.email
+                    }
+
+                    localStorage.setItem('user_data', JSON.stringify(userDataStore));
+                    window.location.href = '/main-page';
+                }
+                else
+                {
+                    this.showNotification('error', 'Username or password is incorrect!');
+                }
+            });
+        }
+    }
+
+    checkResponse = (response) =>
+    {
+        if (response.status >= 500)
+        {
+            this.showErrorMessage('Error processing request', 'Did not get a valid response from server!');
+            throw new Error('Invalid JSON from server - probably a server error');
         }
 
-        // Check response to ensure its a valid user
+        return response;
     }
 
     areFieldsValid = () => 
@@ -61,6 +108,30 @@ export default class Login extends Component {
             title: title,
             content: message,
         });
+    }
+
+    showNotification = (notificationType, message) =>
+    {
+        let config = 
+        {
+            message: message,
+            placement: 'bottomLeft'
+        }; 
+
+        if (notificationType === 'success')
+        {
+            notification.success(config);
+        }
+
+        if (notificationType === 'error')
+        {
+            notification.error(config);
+        }
+
+        if (notificationType === 'warning')
+        {
+            notification.warning(config);
+        }
     }
 
     render() {
