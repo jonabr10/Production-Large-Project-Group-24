@@ -33,7 +33,7 @@ const MainPage = () => {
                     <div class="row">
                         <div class="column left">
                             <div class="leftpan">  
-                                <Account />
+                                <Account userData={userData}/>
                             </div>
                             <Tabs defaultTab="vertical-tab-one" vertical class="vertical-tabs">
                                 <TabList>
@@ -43,7 +43,8 @@ const MainPage = () => {
                                     <Tab tabFor="vertical-tab-three">Weight Tracking</Tab>
                                     <Tab tabFor="vertical-tab-four">Hydration</Tab>
                                     <Tab tabFor="vertical-tab-five">Alarms</Tab>
-                                    <Tab tabFor="vertical-tab-six"><Logout/> </Tab>
+                                    <br></br>
+                                    <Logout /> 
                                 </TabList>
                                 
                                 <div class="column middle">

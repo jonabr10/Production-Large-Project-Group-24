@@ -108,5 +108,6 @@ npm install react-web-tabs --save
 npm install --save react-router-dom
 npm install antd
 npm install react-table
+npm install --save @ant-design/icons
 
 --->
