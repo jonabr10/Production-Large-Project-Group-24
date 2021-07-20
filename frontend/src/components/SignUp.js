@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import './css/LoginAndSignup.css';
-import { Modal, Alert } from 'antd';
+import { Modal, Alert, notification } from 'antd';
 
 export default class SignUp extends Component {
     constructor(props)
@@ -27,12 +27,54 @@ export default class SignUp extends Component {
     {        
         if (this.areFieldsValid())
         {
-            alert('hi');
+            let pathBuilder = require('../Path');
+            
+            let registerPayload = 
+            {
+                firstName: this.state.firstName, 
+                lastName: this.state.lastName,
+                userName: this.state.username,
+                password: this.state.password,
+                email: this.state.email
+            }
 
-            // Check response to ensure user doesn't already exist
+            let httpRequest = 
+            {
+                method: 'post',
+                body: JSON.stringify(registerPayload),
+                headers: {'Content-Type': 'application/json; charset=utf-8'}
+            }
+            
+            fetch(pathBuilder.buildPath('api/register'), httpRequest)
+            .then(this.checkResponse)
+            .catch(function(error) { console.log(error); })
+            .then(response => response.json())
+            .then(responseData =>
+            {
+                if (responseData.error.length === 0)
+                {
+                    this.clearAllFields();
+                    this.showNotification('success', 'Successfully created user!');
+                }
+                else
+                {
+                    this.showNotification('error', 'Username or email already exists!');
+                }
+            });
         }
     }
     
+    checkResponse = (response) =>
+    {
+        if (response.status >= 500)
+        {
+            this.showErrorMessage('Error processing request', 'Did not get a valid response from server!');
+            throw new Error('Invalid JSON from server - probably a server error');
+        }
+
+        return response;
+    }
+
     areFieldsValid = () => 
     {
         let validFlag = true;
@@ -106,6 +148,50 @@ export default class SignUp extends Component {
         });
     }
 
+    showNotification = (notificationType, message) =>
+    {
+        let config = 
+        {
+            message: message,
+            placement: 'bottomLeft'
+        }; 
+
+        if (notificationType === 'success')
+        {
+            notification.success(config);
+        }
+
+        if (notificationType === 'error')
+        {
+            notification.error(config);
+        }
+
+        if (notificationType === 'warning')
+        {
+            notification.warning(config);
+        }
+    }
+
+    clearAllFields = () =>
+    {
+        document.getElementById('firstName').value = '';
+        document.getElementById('lastName').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('confirmPassword').value = '';
+        
+        this.setState
+        ({ 
+            firstName: '',
+            lastName: '',
+            email: '',
+            username: '',
+            password: '',
+            confirmPassword: ''
+        });
+    }
+
     render() {
         return (
             <form>
@@ -113,34 +199,34 @@ export default class SignUp extends Component {
 
                 <div className="form-group">
                     <label>First name</label>
-                    <input type="text" name="firstName" className="form-control" placeholder="First name" maxLength="50" onChange={this.handleInputChange} />
+                    <input type="text" id="firstName" name="firstName" className="form-control" placeholder="First name" maxLength="50" onChange={this.handleInputChange} />
                 </div>
 
                 <div className="form-group">
                     <label>Last name</label>
-                    <input type="text" name="lastName" className="form-control" placeholder="Last name" maxLength="50" onChange={this.handleInputChange} />
+                    <input type="text" id="lastName" name="lastName" className="form-control" placeholder="Last name" maxLength="50" onChange={this.handleInputChange} />
                 </div>
 
                 <div className="form-group">
                     <label>Email</label>
-                    <input type="email" name="email" className="form-control" placeholder="Enter email" maxLength="50" onChange={this.handleInputChange} />
+                    <input type="email" id="email" name="email" className="form-control" placeholder="Enter email" maxLength="50" onChange={this.handleInputChange} />
                     <div id="invalidEmailAlert"></div>
                 </div>
 
                 <div className="form-group">
                     <label>Username</label>
-                    <input type="text" name="username" className="form-control" placeholder="Enter username" maxLength="50" onChange={this.handleInputChange} />
+                    <input type="text" id="username" name="username" className="form-control" placeholder="Enter username" maxLength="50" onChange={this.handleInputChange} />
                 </div>
 
                 <div className="form-group">
                     <label>Password</label>
-                    <input type="password" name="password" className="form-control" placeholder="Enter password" maxLength="50" onChange={this.handleInputChange} />
+                    <input type="password" id="password" name="password" className="form-control" placeholder="Enter password" maxLength="50" onChange={this.handleInputChange} />
                     <div id="invalidPasswordAlert"></div>
                 </div>
 
                 <div className="form-group">
                     <label>Confirm Password</label>
-                    <input type="password" name="confirmPassword" className="form-control" placeholder="Confirm password" maxLength="50" onChange={this.handleInputChange} />
+                    <input type="password" id="confirmPassword" name="confirmPassword" className="form-control" placeholder="Confirm password" maxLength="50" onChange={this.handleInputChange} />
                 </div>
 
                 <br></br>
