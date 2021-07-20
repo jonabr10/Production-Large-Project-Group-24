@@ -7,23 +7,41 @@ function Search()
         <div class="search-container">
             <div class="search-child bar">
                 <h3>Search</h3>
+                <form>
+                    <input type='text' class='searchbar' name='search'/>
+                    <button>Search</button>
+                </form>
             </div>
-
             <div class="search-child sresult">
                 <h3>Results</h3>
-                <form>
-                    <inputs>Water Drank in Ounces</inputs>
-                    <br></br>
-                    <input type='number' name='weight'/>
-                    <br></br>
-                    <br></br>
-                    <inputs>Date</inputs>
-                    <br></br>
-                    <input type='date' name='date'/>
-                    <br></br>
-                    <br></br>
-                    <input type='submit'/>
-                </form>
+                <p>12:00 PM</p>
+                <p>2:00 PM</p>
+                <p>3:00 PM</p>
+                <p>4:00 PM</p>
+                <p>12:00 PM</p>
+                <p>2:00 PM</p>
+                <p>3:00 PM</p>
+                <p>4:00 PM</p>
+                <p>12:00 PM</p>
+                <p>2:00 PM</p>
+                <p>3:00 PM</p>
+                <p>4:00 PM</p>
+                <p>12:00 PM</p>
+                <p>2:00 PM</p>
+                <p>3:00 PM</p>
+                <p>4:00 PM</p>
+                <p>12:00 PM</p>
+                <p>2:00 PM</p>
+                <p>3:00 PM</p>
+                <p>4:00 PM</p>
+                <p>12:00 PM</p>
+                <p>2:00 PM</p>
+                <p>3:00 PM</p>
+                <p>4:00 PM</p>
+                <p>12:00 PM</p>
+                <p>2:00 PM</p>
+                <p>3:00 PM</p>
+                <p>4:00 PM</p>
             </div>
         </div>
         
