@@ -70,7 +70,7 @@ function Workouts()
                        {...column.getHeaderProps()}
                        style={{
                          borderBottom: 'solid 5px #7BD6FF',
-                         color: 'Red',
+                         color: '#ffbdad',
                        }}
                    >
                      {column.render('Header')}
