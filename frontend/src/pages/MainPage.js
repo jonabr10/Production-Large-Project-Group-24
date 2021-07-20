@@ -11,8 +11,19 @@ import Workouts from '../components/Workouts';
 import './css/MainPage.css';
 import { Tabs, Tab, TabPanel, TabList } from 'react-web-tabs';
 import "./css/react-web-tabs.css";
+import { Redirect } from "react-router-dom";
 
 const MainPage = () => {
+    
+    let userData = localStorage.getItem('user_data');
+    
+    if (userData == null || userData.length === 0)
+    {
+        <Redirect to="/sign-in" />
+    }
+
+    userData = JSON.parse(userData);
+    
     return (
         <div>
             <div class="lower">
@@ -21,8 +32,7 @@ const MainPage = () => {
                 </div>
                     <div class="row">
                         <div class="column left">
-                            <div class="leftpan"> 
-                                
+                            <div class="leftpan">  
                                 <Account />
                             </div>
                             <Tabs defaultTab="vertical-tab-one" vertical class="vertical-tabs">
