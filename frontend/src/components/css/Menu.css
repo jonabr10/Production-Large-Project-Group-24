@@ -41,3 +41,8 @@
     display: block;
     text-align:center;
 }
+
+table{
+    width: 99%;
+    margin:-10 px;
+}
