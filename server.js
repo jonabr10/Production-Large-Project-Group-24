@@ -85,13 +85,13 @@ app.post('/api/register', async (req, res, next) => {
 
 app.post('/api/addItem' , async (req, res, next) => {
 
-    const { userId, itemName, tracker, _id } = req.body;
+    const { userId, itemName, tracker, _id, rx, workout, weight, hy } = req.body;
 
     var itemfound = await getItem(userId, itemName);
 
     if (itemfound.length == 0) {
 
-        const itemadd = { userId: userId, _id: _id, itemName: itemName, tracker: tracker}
+        const itemadd = { userId: userId, _id: _id, itemName: itemName, tracker: tracker, rx: rx, workout : workout, weight : weight, hy: hy}
         var error = '';
 
         try {
@@ -104,12 +104,12 @@ app.post('/api/addItem' , async (req, res, next) => {
             error = e.toString();
         }
 
-        var ret = { userId: userId, _id: _id, itemName: itemName, tracker: tracker, error: '' };
+        var ret = { userId: userId, _id: _id, itemName: itemName, tracker: tracker, rx: rx, workout : workout, weight : weight, hy: hy, error: '' };
     }
 
     else if (itemfound.length > 0) {
 
-        var ret = { userId: userId, _id: _id, itemName: itemName, tracker: tracker, error: 'Item already exists' };
+        var ret = { userId: userId, _id: _id, itemName: itemName, tracker: tracker, rx: rx, workout : workout, weight : weight, hy: hy, error: 'Item already exists' };
     }
 
     res.status(200).json(ret);
@@ -125,7 +125,7 @@ app.post('/api/addAlarm' , async (req, res, next) => {
 
     if (alarmfound.length == 0) {
 
-        const alarmadd = { userId: userId, _id: _id, itemId: itemId, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday }
+        const alarmadd = { userId: userId, _id: _id, itemId: itemId, time: time, date : date, weight : weight, water : water, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday }
         var error = '';
 
         try {
@@ -138,12 +138,12 @@ app.post('/api/addAlarm' , async (req, res, next) => {
             error = e.toString();
         }
 
-        var ret = {userId: userId, _id: _id, itemId: itemId, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday , error: '' };
+        var ret = {userId: userId, _id: _id, itemId: itemId, time: time, date : date, weight : weight, water : water, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday , error: '' };
     }
 
     else if (alarmfound.length > 0) {
 
-        var ret = { userId: userId, _id: _id, itemId: itemId, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday , error: 'Alarm already exists' };
+        var ret = { userId: userId, _id: _id, itemId: itemId, time: time, date : date, weight : weight, water : water, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday , error: 'Alarm already exists' };
     }
 
     res.status(200).json(ret);
