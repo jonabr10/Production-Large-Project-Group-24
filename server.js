@@ -19,7 +19,7 @@ const client = new MongoClient(url);
 client.connect();
 
 // 3 categories:
-// - Workout 
+// - Workout
 // - prescription
 // - hydration
 

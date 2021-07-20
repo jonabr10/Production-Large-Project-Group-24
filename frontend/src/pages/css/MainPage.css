@@ -80,9 +80,9 @@ html, body {
   margin:auto;
   height: auto;
   max-height: 50%;
-  width: 85%;
+  width: 75%;
   border-radius: 18px;
-  background-color:rgb(255, 255, 255);
+  background-color:rgb(195, 241, 238);
   overflow-wrap: break-word;
   
 }
