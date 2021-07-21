@@ -8,8 +8,9 @@ class Account extends Component
         super(props);
     }
 
-    render(){
-        return(
+    render()
+    {
+        return (
             <div>
                 <h3>{this.props.userData.firstName} {this.props.userData.lastName}</h3>
             </div>

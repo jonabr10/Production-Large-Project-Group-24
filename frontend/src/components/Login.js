@@ -3,7 +3,8 @@ import ReactDOM from "react-dom";
 import './css/LoginAndSignup.css';
 import { Modal, Alert, notification } from 'antd';
 
-export default class Login extends Component {
+export default class Login extends Component 
+{
     constructor(props)
     {
         super(props);

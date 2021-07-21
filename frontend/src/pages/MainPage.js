@@ -11,15 +11,14 @@ import Workouts from '../components/Workouts';
 import './css/MainPage.css';
 import { Tabs, Tab, TabPanel, TabList } from 'react-web-tabs';
 import "./css/react-web-tabs.css";
-import { Redirect } from "react-router-dom";
 
-const MainPage = () => {
-    
+const MainPage = () => 
+{
     let userData = localStorage.getItem('user_data');
     
     if (userData == null || userData.length === 0)
     {
-        <Redirect to="/sign-in" />
+        window.location.href = '/sign-in';
     }
 
     userData = JSON.parse(userData);
@@ -49,19 +48,19 @@ const MainPage = () => {
                                 
                                 <div class="column middle">
                                     <TabPanel tabId="vertical-tab-zero" class="middle">
-                                        <Search />
+                                        <Search userData={userData}/>
                                     </TabPanel>
                                     <TabPanel tabId="vertical-tab-one" class="middle">
-                                        <Prescription />
+                                        <Prescription userData={userData}/>
                                     </TabPanel>
                                     <TabPanel tabId="vertical-tab-two" class="middle">
-                                        <Workouts />
+                                        <Workouts userData={userData}/>
                                     </TabPanel> 
                                     <TabPanel tabId="vertical-tab-three" class="middle">
-                                        <WeightTrack />
+                                        <WeightTrack userData={userData}/>
                                     </TabPanel> 
                                     <TabPanel tabId="vertical-tab-four" class="middle">
-                                        <Hydration />
+                                        <Hydration userData={userData}/>
                                     </TabPanel>
                                     <TabPanel tabId="vertical-tab-five" class="middle">
                                         <Alarms />
