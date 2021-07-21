@@ -24,12 +24,12 @@ client.connect();
 
 app.post('/api/addItem' , async (req, res, next) => {
 
-    const { _id, userId, workout, hy, rx, item, waterAmount, _aid, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+    const {userId, workout, hy, rx, item, waterAmount, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
 
     //Check Incoming for above elaboration
 
     var itemfound = await getItem(userId, item);
-    var alarmfound = await getAlarms(_id)
+    var alarmfound = await getAlarms((getItem(userId, item)._id.toString().trim()))
 
     //Calling two auxilliary functions to check if item and alarm functions already exist, saving result respective variable
 
@@ -37,7 +37,7 @@ app.post('/api/addItem' , async (req, res, next) => {
     
     if (itemfound.length == 0 && alarmfound.length == 0) {
 
-        const itemadd = {_id : _id , userId : userId, workout : workout, hy : hy, rx : rx, item : item, waterAmount : waterAmount}
+        const itemadd = {userId : userId, workout : workout, hy : hy, rx : rx, item : item, waterAmount : waterAmount}
         var error = '';
 
         //Prepping an item package, try to see if item is added successfully into DB
@@ -55,7 +55,7 @@ app.post('/api/addItem' , async (req, res, next) => {
 
         //Prepping an alarm package, trying to see if alarm is added successfully into DB
         //Error string from below try catch will be appended to return status
-        const alarmadd = {_id: _aid, userId : userId, itemId : _id, time : time , monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday}
+        const alarmadd = { userId : userId, itemId : (getItem(userId, item)._id.toString().trim()) , time : time , monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday}
         var error = '';
 
         
@@ -72,20 +72,20 @@ app.post('/api/addItem' , async (req, res, next) => {
 
         //Packaging return value as outgoing elaborated above 
 
-        var ret = { _id : _id , userId : userId, workout : workout, hy : hy, rx : rx, item : item, waterAmount : waterAmount, _id: _aid ,itemId : _id, time : time , monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: '' };
+        var ret = {userId : userId, workout : workout, hy : hy, rx : rx, item : item, waterAmount : waterAmount, itemId : (getItem(userId, item)._id.toString().trim()), time : time , monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: '' };
     }
 
     //In the event getItem returns a value that isn't empty, we assume the item already exists by objectId, and return the appropriate error string.
     else if (itemfound.length > 0) {
 
-        var ret = { _id : _id , userId : userId, workout : workout, hy : hy, rx : rx, item : item, waterAmount : waterAmount, _id: _aid ,itemId : _id, time : time , monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Item already exists' };
+        var ret = {userId : userId, workout : workout, hy : hy, rx : rx, item : item, waterAmount : waterAmount ,itemId : (getItem(userId, item)._id.toString().trim()), time : time , monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Item already exists' };
     }
 
 
     //In the event getAlarms returns a value that isn't empty, we assume the alarm already exists by itemId, and return the appropriate error string.
     else if (alarmfound.length > 0){
 
-        var ret = {_id : _id , userId : userId, workout : workout, hy : hy, rx : rx, item : item, waterAmount : waterAmount, _id: _aid ,itemId : _id, time : time , monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm already exists' };
+        var ret = { userId : userId, workout : workout, hy : hy, rx : rx, item : item, waterAmount : waterAmount , itemId : (getItem(userId, item)._id.toString().trim()), time : time , monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm already exists' };
 
     }
 
