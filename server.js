@@ -23,15 +23,6 @@ client.connect();
 // - prescription
 // - hydration
 
-// app.post('/api/deleteItem', async (req, res, next) => {
-//     var error = '';
-
-//     const { userId, item } = req.body;
-//     const db = client.db();
-//     const results = await
-
-// });
-
 // Incoming: user object
 // Outgoing: users[]
 async function getUser(userName, email) {
@@ -50,6 +41,151 @@ async function getUser(userName, email) {
 
     return userResults;
 }
+
+// Incoming: item objects
+// Outgoing: alarms[]
+async function getItem(userId, itemName) {
+
+    const db = client.db();
+    var _item = (itemName.toString()).trim();
+
+    const itemResult = await db.collection('items').findOne(
+        {
+            $and: [
+                { "userId": userId },
+                { "item": _item }
+            ]
+        }
+    )
+
+    return itemResult;
+}
+
+// Incoming: _id from items collections
+// Outgoing: alarms[]
+async function getAlarms(itemResult) {
+
+    const db = client.db();
+    var _itemId = (itemResult._id.toString()).trim();
+
+    const alarmResults = await db.collection('alarms').find(
+        { "itemId": _itemId }
+    ).toArray();
+
+    var _retAlarms = [];
+
+    // Debug: verify alarm object content
+    // debugAlarmObject(alarmResults[0]);
+
+    for (var i = 0; i < alarmResults.length; i++) {
+        _retAlarms.push({
+            _id: alarmResults[i]._id,
+            userId: alarmResults[i].userId,
+            itemId: alarmResults[i].itemId,
+            time: alarmResults[i].time,
+            monday: alarmResults[i].monday,
+            tuesday: alarmResults[i].tuesday,
+            wednesday: alarmResults[i].wednesday,
+            thursday: alarmResults[i].thursday,
+            friday: alarmResults[i].friday,
+            saturday: alarmResults[i].saturday,
+            sunday: alarmResults[i].sunday
+        });
+    }
+
+    return _retAlarms;
+}
+
+// Incoming: alarm object
+// Outgoing: none
+function debugAlarmObject(alarmObj) {
+    console.log('alarm[] ' + typeof alarmObj._id + ' _id/ObjectId value: ' + alarmObj._id);
+    console.log('alarm[] ' + typeof alarmObj.userId + ' userId value: ' + alarmObj.userId);
+    console.log('alarm[] ' + typeof alarmObj.itemId + ' itemId value: ' + alarmObj.itemId);
+    console.log('alarm[] ' + typeof alarmObj.time + ' time value: ' + alarmObj.time);
+    console.log('alarm[] ' + typeof alarmObj.monday + ' monday value: ' + alarmObj.monday);
+    console.log('alarm[] ' + typeof alarmObj.tuesday + ' tuesday value: ' + alarmObj.tuesday);
+    console.log('alarm[] ' + typeof alarmObj.wednesday + ' wednesday value: ' + alarmObj.wednesday);
+    console.log('alarm[] ' + typeof alarmObj.thursday + ' thursday value: ' + alarmObj.thursday);
+    console.log('alarm[] ' + typeof alarmObj.friday + ' friday value: ' + alarmObj.friday);
+    console.log('alarm[] ' + typeof alarmObj.saturday + ' saturday value: ' + alarmObj.saturday);
+    console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
+}
+
+async function deleteItem(itemToBeDeleted) {
+    var error = '';
+
+    try {
+        const db = client.db();
+        db.collection('items').deleteOne(
+            { "_id": itemToBeDeleted._id }
+        )
+
+    } catch (e) {
+        error = e.toString();
+    }
+
+    return error;
+}
+
+async function deleteAlarms(itemToBeDeleted) {
+    var error = '';
+    var _itemId = (itemToBeDeleted._id.toString()).trim();
+
+    try {
+        const db = client.db();
+
+        // Important: we are utilizing _id (item object id) as the arguement to pass for
+        //            deleteMany collection method
+        db.collection('alarms').deleteMany(
+            { "itemId": _itemId }
+        )
+
+    } catch (e) {
+        error = e.toString();
+    }
+
+    return error;
+}
+
+app.post('/api/deleteItem', async (req, res, next) => {
+    var error = '';
+    var deleteCount = 0;
+
+    const { userId, item } = req.body;
+
+    // check if the item exists in the database
+    var itemToBeDeleted = await getItem(userId, item);
+
+    if (itemToBeDeleted) {
+
+        // check if itemToBeDeleted have any alarms
+        var doesItemToBeDeletedHaveAlarms = await getAlarms(itemToBeDeleted);
+
+        if (doesItemToBeDeletedHaveAlarms.length > 0) {
+
+            // update deleteCount with the current number of alarms within itemToBeDeleted
+            deleteCount += doesItemToBeDeletedHaveAlarms.length;
+            error = await deleteAlarms(itemToBeDeleted);
+
+            // after deleting all the alarms within itemToBeDeleted, delete itemToBeDeleted
+            error = (error + await deleteItem(itemToBeDeleted));
+            deleteCount++;
+        }
+
+        else if (doesItemToBeDeletedHaveAlarms.length <= 0) {
+            error = await deleteItem(itemToBeDeleted);
+            deleteCount++;
+        }
+    }
+
+    else if (!itemToBeDeleted) {
+        error = 'Item does not exist';
+    }
+
+    var ret = { userId: userId, item: item, deleteCount: deleteCount, error: error };
+    res.status(200).json(ret);
+});
 
 // Incoming: new user credentials
 // Outgoing: none
@@ -114,86 +250,47 @@ app.post('/api/login', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
-// Incoming: item objects
-// Outgoing: alarms[]
-async function getItem(userId, itemName) {
+// Incoming: userId
+// Outgoing: all user Alarms[] w/ userId
+app.post('/api/getAllUserAlarms', async (req, res, next) => {
+
+    const { userId } = req.body;
 
     const db = client.db();
-    var _item = (itemName.toString()).trim();
-
-    const itemResults = await db.collection('items').find(
-        {
-            $and: [
-                { "userId": userId },
-                { "item": _item }
-            ]
-        }
-    ).toArray();
-
-    var _retItems = [];
-
-    for (var i = 0; i < itemResults.length; i++) {
-        _retItems.push({
-            _id: itemResults[i]._id,
-            userId: itemResults[i].userId,
-            item: itemResults[i].item,
-            tracker: itemResults[i].tracker,
-        });
-    }
-
-    return _retItems;
-}
-
-// Incoming: alarm object
-// Outgoing: none
-function debugAlarmObject(alarmObj) {
-    console.log('alarm[] ' + typeof alarmObj._id + ' _id/ObjectId value: ' + alarmObj._id);
-    console.log('alarm[] ' + typeof alarmObj.userId + ' userId value: ' + alarmObj.userId);
-    console.log('alarm[] ' + typeof alarmObj.itemId + ' itemId value: ' + alarmObj.itemId);
-    console.log('alarm[] ' + typeof alarmObj.time + ' time value: ' + alarmObj.time);
-    console.log('alarm[] ' + typeof alarmObj.monday + ' monday value: ' + alarmObj.monday);
-    console.log('alarm[] ' + typeof alarmObj.tuesday + ' tuesday value: ' + alarmObj.tuesday);
-    console.log('alarm[] ' + typeof alarmObj.wednesday + ' wednesday value: ' + alarmObj.wednesday);
-    console.log('alarm[] ' + typeof alarmObj.thursday + ' thursday value: ' + alarmObj.thursday);
-    console.log('alarm[] ' + typeof alarmObj.friday + ' friday value: ' + alarmObj.friday);
-    console.log('alarm[] ' + typeof alarmObj.saturday + ' saturday value: ' + alarmObj.saturday);
-    console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
-}
-
-// Incoming: item objects
-// Outgoing: alarms[]
-async function getAlarms(itemResult) {
-
-    const db = client.db();
-    var _itemId = (itemResult._id.toString()).trim();
-
     const alarmResults = await db.collection('alarms').find(
-        { "itemId": _itemId }
+        { "userId": userId }
     ).toArray();
 
-    var _retAlarms = [];
+    if (alarmResults.length > 0) {
 
-    // Debug: verify alarm object content
-    // debugAlarmObject(alarmResults[0]);
+        var _retAlarms = [];
 
-    for (var i = 0; i < alarmResults.length; i++) {
-        _retAlarms.push({
-            _id: alarmResults[i]._id,
-            userId: alarmResults[i].userId,
-            itemId: alarmResults[i].itemId,
-            time: alarmResults[i].time,
-            monday: alarmResults[i].monday,
-            tuesday: alarmResults[i].tuesday,
-            wednesday: alarmResults[i].wednesday,
-            thursday: alarmResults[i].thursday,
-            friday: alarmResults[i].friday,
-            saturday: alarmResults[i].saturday,
-            sunday: alarmResults[i].sunday
-        });
+        for (var i = 0; i < alarmResults.length; i++) {
+            _retAlarms.push({
+                _id: alarmResults[i]._id,
+                userId: alarmResults[i].userId,
+                itemId: alarmResults[i].itemId,
+                date: alarmResults[i].date,
+                time: alarmResults[i].time,
+                monday: alarmResults[i].monday,
+                tuesday: alarmResults[i].tuesday,
+                wednesday: alarmResults[i].wednesday,
+                thursday: alarmResults[i].thursday,
+                friday: alarmResults[i].friday,
+                saturday: alarmResults[i].saturday,
+                sunday: alarmResults[i].sunday
+            });
+        }
+
+        var ret = { Alarms: _retAlarms, error: " " };
+        res.status(200).json(ret);
     }
 
-    return _retAlarms;
-}
+    else {
+        var ret = { results: _ret, error: "No records found" };
+        res.status(200).json(ret);
+    }
+});
 
 // Incoming: userId, search
 // Outgoing: results[], error
