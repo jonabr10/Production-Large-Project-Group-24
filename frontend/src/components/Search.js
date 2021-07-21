@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './css/Search.css';
-import { Button, Tooltip } from 'antd';
+import { Button, Tooltip, Table } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 
 class Search extends Component
@@ -12,6 +12,132 @@ class Search extends Component
 
     render()
     {
+        const columns = 
+        [
+            {
+              title: 'Category',
+              dataIndex: 'category',
+              key: 'category',
+            },
+            {
+              title: 'Description',
+              dataIndex: 'description',
+              key: 'description',
+            },
+            {
+              title: 'Alarm Status',
+              dataIndex: 'alarm',
+              key: 'alarm',
+            },
+        ];
+
+        const dataSource = 
+        [
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+            {
+                key: '1',
+                category: 'Mike',
+                description: 32,
+                alarm: '10 Downing Street',
+            },
+
+        ];
+
         return (
             <div class="search-container">
                 <div class="search-child bar">
@@ -22,37 +148,10 @@ class Search extends Component
                         <Button type="primary" shape="square" icon={<SearchOutlined />} className="search-button"/>
                     </Tooltip> 
                 </div>
-                <div><h3>Results</h3></div>
-                <div class="search-child result">
-                    
-                    <p>12:00 PM</p>
-                    <p>2:00 PM</p>
-                    <p>3:00 PM</p>
-                    <p>4:00 PM</p>
-                    <p>12:00 PM</p>
-                    <p>2:00 PM</p>
-                    <p>3:00 PM</p>
-                    <p>4:00 PM</p>
-                    <p>12:00 PM</p>
-                    <p>2:00 PM</p>
-                    <p>3:00 PM</p>
-                    <p>4:00 PM</p>
-                    <p>12:00 PM</p>
-                    <p>2:00 PM</p>
-                    <p>3:00 PM</p>
-                    <p>4:00 PM</p>
-                    <p>12:00 PM</p>
-                    <p>2:00 PM</p>
-                    <p>3:00 PM</p>
-                    <p>4:00 PM</p>
-                    <p>12:00 PM</p>
-                    <p>2:00 PM</p>
-                    <p>3:00 PM</p>
-                    <p>4:00 PM</p>
-                    <p>12:00 PM</p>
-                    <p>2:00 PM</p>
-                    <p>3:00 PM</p>
-                    <p>4:00 PM</p>
+                <div><h4>Results</h4></div>
+                
+                <div>
+                    <Table dataSource={dataSource} columns={columns} pagination={{ pageSize: 5, size: 'small'}}/>
                 </div>
             </div>  
         );
