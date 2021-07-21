@@ -19,7 +19,7 @@ const client = new MongoClient(url);
 client.connect();
 
 // 3 categories:
-// - Workout 
+// - Workout
 // - prescription
 // - hydration
 
@@ -27,10 +27,23 @@ client.connect();
 //     var error = '';
 
 //     const { userId, item } = req.body;
+
+//     var itemExist = await getItem(userId, item);
+
+//     if (itemExist) {
+
+//     }
+
+//     else if (!itemExist) {
+
+//     }
+
+
 //     const db = client.db();
 //     const results = await
 
 // });
+
 
 // Incoming: user object
 // Outgoing: users[]
@@ -39,7 +52,7 @@ async function getUser(userName, email) {
     var _userName = (userName.toString()).trim();
     var _email = (email.toString()).trim();
 
-    const userResults = await db.collection('users').findOne(
+    const userResult = await db.collection('users').findOne(
         {
             $or: [
                 { "userName": _userName },
@@ -48,7 +61,7 @@ async function getUser(userName, email) {
         }
     )
 
-    return userResults;
+    return userResult;
 }
 
 // Incoming: new user credentials
@@ -57,6 +70,7 @@ app.post('/api/register', async (req, res, next) => {
 
     const { firstName, lastName, userName, password, email } = req.body;
 
+    // Check to see if the new user already exists in the database
     var isTheNewUserDuplicate = await getUser(userName, password);
 
     if (!isTheNewUserDuplicate) {
@@ -65,9 +79,11 @@ app.post('/api/register', async (req, res, next) => {
         var error = '';
 
         try {
+
             const db = client.db();
             db.collection('users').insertOne(registerNewUser);
         } catch (e) {
+
             error = e.toString();
         }
 
@@ -121,7 +137,7 @@ async function getItem(userId, itemName) {
     const db = client.db();
     var _item = (itemName.toString()).trim();
 
-    const itemResults = await db.collection('items').find(
+    const itemResult = await db.collection('items').find(
         {
             $and: [
                 { "userId": userId },
@@ -130,18 +146,7 @@ async function getItem(userId, itemName) {
         }
     ).toArray();
 
-    var _retItems = [];
-
-    for (var i = 0; i < itemResults.length; i++) {
-        _retItems.push({
-            _id: itemResults[i]._id,
-            userId: itemResults[i].userId,
-            item: itemResults[i].item,
-            tracker: itemResults[i].tracker,
-        });
-    }
-
-    return _retItems;
+    return itemResult;
 }
 
 // Incoming: alarm object
@@ -160,7 +165,7 @@ function debugAlarmObject(alarmObj) {
     console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
 }
 
-// Incoming: item objects
+// Incoming: _id from items collections
 // Outgoing: alarms[]
 async function getAlarms(itemResult) {
 
@@ -195,6 +200,48 @@ async function getAlarms(itemResult) {
     return _retAlarms;
 }
 
+// Incoming: userId
+// Outgoing: all user Alarms[] w/ userId
+app.post('/api/getAllUserAlarms', async (req, res, next) => {
+
+    const { userId } = req.body;
+
+    const db = client.db();
+    const alarmResults = await db.collection('alarms').find(
+        { "userId": userId }
+    ).toArray();
+
+    if (alarmResults.length > 0) {
+
+        var _retAlarms = [];
+
+        for (var i = 0; i < alarmResults.length; i++) {
+            _retAlarms.push({
+                _id: alarmResults[i]._id,
+                userId: alarmResults[i].userId,
+                itemId: alarmResults[i].itemId,
+                date: alarmResults[i].date,
+                time: alarmResults[i].time,
+                monday: alarmResults[i].monday,
+                tuesday: alarmResults[i].tuesday,
+                wednesday: alarmResults[i].wednesday,
+                thursday: alarmResults[i].thursday,
+                friday: alarmResults[i].friday,
+                saturday: alarmResults[i].saturday,
+                sunday: alarmResults[i].sunday
+            });
+        }
+
+        var ret = { Alarms: _retAlarms, error: " " };
+        res.status(200).json(ret);
+    }
+
+    else {
+        var ret = { results: _ret, error: "No records found" };
+        res.status(200).json(ret);
+    }
+});
+
 // Incoming: userId, search
 // Outgoing: results[], error
 app.post('/api/search', async (req, res, next) => {
@@ -220,7 +267,6 @@ app.post('/api/search', async (req, res, next) => {
         for (var i = 0; i < itemResults.length; i++) {
 
             if (itemResults[i].tracker == true) {
-
                 var _alarms = await getAlarms(itemResults[i]);
 
                 _ret.push({
@@ -247,9 +293,6 @@ app.post('/api/search', async (req, res, next) => {
     }
 
     else {
-        var _test = await getItem(userId, _search);
-        console.log('Testing length of empty array: ' + _test.length);
-
         var ret = { results: _ret, error: "No records found" };
         res.status(200).json(ret);
     }
