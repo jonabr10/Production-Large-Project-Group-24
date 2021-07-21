@@ -190,7 +190,8 @@ app.post('/api/deleteItem', async (req, res, next) => {
 
         if (doesItemToBeDeletedHaveAlarms.length > 0) {
 
-            // update deleteCount with the current number of alarms within itemToBeDeleted
+            // update deleteCount with the current number of alarms within itemToBeDeleted, then delete all
+            // the alarms associated with item object
             deleteCount += doesItemToBeDeletedHaveAlarms.length;
             error = await deleteAlarms(itemToBeDeleted);
 
