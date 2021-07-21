@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import './css/Search.css';
+import { Button, Tooltip } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 
 class Search extends Component
 {
@@ -14,10 +16,11 @@ class Search extends Component
             <div class="search-container">
                 <div class="search-child bar">
                     <h3>Search</h3>
-                    <form>
-                        <input type='text' class='searchbar' name='search'/>
-                        <button>Search</button>
-                    </form>
+                    <input type='text' class='searchbar' name='search'/>
+                    
+                    <Tooltip title="Search">
+                        <Button type="primary" shape="square" icon={<SearchOutlined />} className="search-button"/>
+                    </Tooltip> 
                 </div>
                 <div><h3>Results</h3></div>
                 <div class="search-child result">

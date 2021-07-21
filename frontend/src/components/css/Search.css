@@ -1,6 +1,5 @@
 .search-container {
     height: 450px;
-    
 }
 
 .search-child{
@@ -12,6 +11,12 @@
     overflow-x: auto;
     text-align: center;
     height: 77%;
+    
+}
+
+.search-button {
+    height: 32%;
+    right: -1px;
 }
 
 .bar{
@@ -20,7 +25,7 @@
     height: 20%;
 }
 
-inputs{
+.inputs{
    font-weight:bold; 
 }
 
