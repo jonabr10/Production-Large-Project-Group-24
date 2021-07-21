@@ -18,13 +18,8 @@ const MongoClient = require('mongodb').MongoClient;
 const client = new MongoClient(url);
 client.connect();
 
-// 3 categories:
-// - Workout
-// - prescription
-// - hydration
-
-// Incoming: user object
-// Outgoing: users[]
+// Incoming: userName, email
+// Outgoing: user (singular)
 async function getUser(userName, email) {
     const db = client.db();
     var _userName = (userName.toString()).trim();
@@ -42,8 +37,8 @@ async function getUser(userName, email) {
     return userResult;
 }
 
-// Incoming: item objects
-// Outgoing: alarms[]
+// Incoming: userId, item name
+// Outgoing: item (singular)
 async function getItem(userId, itemName) {
 
     const db = client.db();
@@ -61,12 +56,32 @@ async function getItem(userId, itemName) {
     return itemResult;
 }
 
-// Incoming: _id from items collections
-// Outgoing: alarms[]
-async function getAlarms(itemResult) {
+// Incoming: _id (alarm object), 
+// Outgoing: alarm (singular)
+async function getAlarm(alarmObjectId) {
+
+    try {
+        // setup ObjectId format required for an _id (alarm object) search
+        var ObjectId = require('mongodb').ObjectId;
+        var o_id = ObjectId(alarmObjectId);
+
+        const db = client.db();
+        const alarmResult = await db.collection('alarms').findOne(
+            { "_id": o_id }
+        )
+        return alarmResult;
+    }
+    catch (e) {
+        return null;
+    }
+}
+
+// Incoming: (item object)
+// Outgoing: alarms[] (multiple)
+async function getAlarms(itemObject) {
 
     const db = client.db();
-    var _itemId = (itemResult._id.toString()).trim();
+    var _itemId = (itemObject._id.toString()).trim();
 
     const alarmResults = await db.collection('alarms').find(
         { "itemId": _itemId }
@@ -96,25 +111,11 @@ async function getAlarms(itemResult) {
     return _retAlarms;
 }
 
-// Incoming: alarm object
-// Outgoing: none
-function debugAlarmObject(alarmObj) {
-    console.log('alarm[] ' + typeof alarmObj._id + ' _id/ObjectId value: ' + alarmObj._id);
-    console.log('alarm[] ' + typeof alarmObj.userId + ' userId value: ' + alarmObj.userId);
-    console.log('alarm[] ' + typeof alarmObj.itemId + ' itemId value: ' + alarmObj.itemId);
-    console.log('alarm[] ' + typeof alarmObj.time + ' time value: ' + alarmObj.time);
-    console.log('alarm[] ' + typeof alarmObj.monday + ' monday value: ' + alarmObj.monday);
-    console.log('alarm[] ' + typeof alarmObj.tuesday + ' tuesday value: ' + alarmObj.tuesday);
-    console.log('alarm[] ' + typeof alarmObj.wednesday + ' wednesday value: ' + alarmObj.wednesday);
-    console.log('alarm[] ' + typeof alarmObj.thursday + ' thursday value: ' + alarmObj.thursday);
-    console.log('alarm[] ' + typeof alarmObj.friday + ' friday value: ' + alarmObj.friday);
-    console.log('alarm[] ' + typeof alarmObj.saturday + ' saturday value: ' + alarmObj.saturday);
-    console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
-}
-
+// Incoming: (item object)
+// Outgoing: error message
+// Purpose: deletes an item from the collection
 async function deleteItem(itemToBeDeleted) {
     var error = '';
-
     try {
         const db = client.db();
         db.collection('items').deleteOne(
@@ -128,6 +129,27 @@ async function deleteItem(itemToBeDeleted) {
     return error;
 }
 
+// Incoming: (item object)
+// Outgoing: error message
+// Purpose: deletes an alarm (singular) from the collection
+async function deleteAlarm(alarmToBeDeleted) {
+    var error = '';
+    try {
+        const db = client.db();
+        db.collection('alarms').deleteOne(
+            { "_id": alarmToBeDeleted._id }
+        )
+
+    } catch (e) {
+        error = e.toString();
+    }
+
+    return error;
+}
+
+// Incoming: (item object)
+// Outgoing: error message
+// Purpose: deletes alarms (multiple) associated to item's _id value
 async function deleteAlarms(itemToBeDeleted) {
     var error = '';
     var _itemId = (itemToBeDeleted._id.toString()).trim();
@@ -148,6 +170,10 @@ async function deleteAlarms(itemToBeDeleted) {
     return error;
 }
 
+// Incoming: userId and item 
+// Outgoing: userId, item, deleteCount, error
+// Purpose: deletes an item and validates the existence of the item and 
+//          also checks if this item has any alarms
 app.post('/api/deleteItem', async (req, res, next) => {
     var error = '';
     var deleteCount = 0;
@@ -187,8 +213,34 @@ app.post('/api/deleteItem', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
-// Incoming: new user credentials
-// Outgoing: none
+// Incoming: userId, _id (alarm object), itemId
+// Outgoing: userId, _id, itemId, deleteCount, error
+// Purpose: deletes an alarm and validates the existence of the alarm
+app.post('/api/deleteAlarm', async (req, res, next) => {
+    var error = '';
+    var deleteCount = 0;
+
+    const { userId, alarmId } = req.body;
+
+    // check if the alarm exists in the database
+    var alarmToBeDeleted = await getAlarm(alarmId);
+
+    if (alarmToBeDeleted) {
+        error = await deleteAlarm(alarmToBeDeleted);
+        deleteCount++;
+    }
+
+    else if (!alarmToBeDeleted) {
+        error = 'Alarm does not exist';
+    }
+
+    var ret = { userId: userId, alarm: alarmId, deleteCount: deleteCount, error: error };
+    res.status(200).json(ret);
+});
+
+// Incoming: new user's firstName, lastName, userName, password, email
+// Outgoing: firstName, lastName, userName, email, error 
+// Purpose: Registers a new user to the user collection
 app.post('/api/register', async (req, res, next) => {
 
     const { firstName, lastName, userName, password, email } = req.body;
@@ -223,6 +275,7 @@ app.post('/api/register', async (req, res, next) => {
 
 // Incoming: login, password
 // Outgoing: id, firstName, lastName, email, error
+// Purpose: login for user, validates user's inputted login/password data
 app.post('/api/login', async (req, res, next) => {
 
     var error = '';
@@ -255,6 +308,7 @@ app.post('/api/login', async (req, res, next) => {
 
 // Incoming: userId
 // Outgoing: all user Alarms[] w/ userId
+// Purpose: provides a JSON array of all the alarms that is associated to userId value
 app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
     const { userId } = req.body;
@@ -297,6 +351,7 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
 // Incoming: userId, search
 // Outgoing: results[], error
+// Purpose:  searches the database based on the userId and item (item name)
 app.post('/api/search', async (req, res, next) => {
 
     var error = '';
@@ -319,26 +374,18 @@ app.post('/api/search', async (req, res, next) => {
 
         for (var i = 0; i < itemResults.length; i++) {
 
-            if (itemResults[i].tracker == true) {
-                var _alarms = await getAlarms(itemResults[i]);
+            var _alarms = await getAlarms(itemResults[i]);
 
-                _ret.push({
-                    _id: itemResults[i]._id,
-                    userId: itemResults[i].userId,
-                    item: itemResults[i].item,
-                    tracker: itemResults[i].tracker,
-                    alarms: _alarms
-                });
-            }
-
-            else if (itemResults[i].tracker == false) {
-                _ret.push({
-                    _id: itemResults[i]._id,
-                    userId: itemResults[i].userId,
-                    item: itemResults[i].item,
-                    tracker: itemResults[i].tracker,
-                });
-            }
+            _ret.push({
+                _id: itemResults[i]._id,
+                item: itemResults[i].item,
+                userId: itemResults[i].userId,
+                rx: itemResults[i].rx,
+                workout: itemResults[i].workout,
+                hy: itemResults[i].hy,
+                waterAmount: itemResults[i].waterAmount,
+                alarms: _alarms
+            });
         }
 
         var ret = { results: _ret, error: error };
