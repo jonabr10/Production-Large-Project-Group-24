@@ -15,6 +15,7 @@ app.use(bodyParser.json());
 require('dotenv').config();
 const url = process.env.MONGODB_URI;
 const MongoClient = require('mongodb').MongoClient;
+const { get } = require('http');
 const client = new MongoClient(url);
 client.connect();
 
@@ -57,7 +58,7 @@ async function getItem(userId, itemName) {
 }
 
 // Incoming: _id (alarm object), 
-// Outgoing: alarm (singular)
+// Outgoing: an already existing alarm (singular) 
 async function getAlarm(alarmObjectId) {
 
     try {
@@ -349,6 +350,118 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
         res.status(200).json(ret);
     }
 });
+
+// Incoming: ObjectId for Item, userId, workout, hy, rx, item name, water amount, objectId for the alarm, time, 
+//            monday - sunday boolean variables
+// Outgoing: ObjectId for Item  , userId , workout, hy, rx , item name, waterAmount, Alarmid ,itemId, time, 
+//           monday - sunday boolean values, error string
+app.post('/api/addItem', async (req, res, next) => {
+
+    const { userId, workout, hy, rx, item, waterAmount,
+        time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+
+    var error = '';
+
+    // check incoming for above elaboration
+    var itemfound = await getItem(userId, item);
+
+    // calling two auxilliary functions to check if item and alarm functions already exist, 
+    // saving result respective variable
+    if (!itemfound) {
+
+        const itemAdd = {
+            userId: userId,
+            workout: workout,
+            hy: hy,
+            rx: rx,
+            item: item,
+            waterAmount: waterAmount
+        }
+
+        //Prepping an item package, try to see if item is added successfully into DB
+        //Error string from below try catch will be appended to return status
+        try {
+
+            const db = client.db();
+            db.collection('items').insertOne(itemAdd);
+
+        } catch (e) {
+            error = e.toString();
+        }
+
+        var newlyCreatedItem = await getItem(userId, item);
+
+        // prepping an alarm package, trying to see if alarm is added successfully into DB
+        // error string from below try catch will be appended to return status
+        const alarmAdd = {
+            userId: userId,
+            itemId: newlyCreatedItem._id.toString().trim(),
+            time: time,
+            monday: monday,
+            tuesday: tuesday,
+            wednesday: wednesday,
+            thursday: thursday,
+            friday: friday,
+            saturday: saturday,
+            sunday: sunday
+        }
+
+        try {
+            const db = client.db();
+            db.collection('alarms').insertOne(alarmAdd);
+        } catch (e) {
+            error = e.toString();
+        }
+
+        //Packaging return value as outgoing elaborated above 
+        var ret = {
+            userId: userId,
+            workout: workout,
+            hy: hy,
+            rx: rx,
+            item: item,
+            waterAmount: waterAmount,
+            itemId: newlyCreatedItem._id.toString().trim(),
+            time: time,
+            monday: monday,
+            tuesday: tuesday,
+            wednesday: wednesday,
+            thursday: thursday,
+            friday: friday,
+            saturday: saturday,
+            sunday: sunday,
+            error: ''
+        };
+    }
+
+    // in the event getItem returns a value that isn't empty, we assume the item already exists by objectId, 
+    // and return the appropriate error string.
+    else if (itemfound) {
+
+        var ret = {
+            userId: userId,
+            workout: workout,
+            hy: hy,
+            rx: rx,
+            item: item,
+            waterAmount: waterAmount,
+            itemId: itemfound._id.toString(),
+            time: time,
+            monday: monday,
+            tuesday: tuesday,
+            wednesday: wednesday,
+            thursday: thursday,
+            friday: friday,
+            saturday: saturday,
+            sunday: sunday,
+            error: 'Item already exists'
+        };
+    }
+
+    //Return 
+    res.status(200).json(ret);
+});
+
 
 // Incoming: userId, search
 // Outgoing: results[], error
