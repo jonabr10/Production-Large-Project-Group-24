@@ -59,16 +59,18 @@ async function getItem(userId, itemName) {
 
 // Incoming: _id (alarm object), 
 // Outgoing: an already existing alarm (singular) 
-async function getAlarm(alarmObjectId) {
+async function getAlarm(itemId) {
 
     try {
         // setup ObjectId format required for an _id (alarm object) search
-        var ObjectId = require('mongodb').ObjectId;
-        var o_id = ObjectId(alarmObjectId);
+        // var ObjectId = require('mongodb').ObjectId;
+        // var o_id = ObjectId(alarmObjectId);
+
+        var _itemId = (itemId.toString()).trim();
 
         const db = client.db();
         const alarmResult = await db.collection('alarms').findOne(
-            { "_id": o_id }
+            { "itemId": _itemId }
         )
         return alarmResult;
     }
@@ -215,17 +217,17 @@ app.post('/api/deleteItem', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
-// Incoming: userId, _id (alarm object), itemId
+// Incoming: userId, _id (alarm object)
 // Outgoing: userId, _id, itemId, deleteCount, error
 // Purpose: deletes an alarm and validates the existence of the alarm
 app.post('/api/deleteAlarm', async (req, res, next) => {
     var error = '';
     var deleteCount = 0;
 
-    const { userId, alarmId } = req.body;
+    const { userId, itemId } = req.body;
 
     // check if the alarm exists in the database
-    var alarmToBeDeleted = await getAlarm(alarmId);
+    var alarmToBeDeleted = await getAlarm(itemId);
 
     if (alarmToBeDeleted) {
         error = await deleteAlarm(alarmToBeDeleted);
@@ -236,7 +238,7 @@ app.post('/api/deleteAlarm', async (req, res, next) => {
         error = 'Alarm does not exist';
     }
 
-    var ret = { userId: userId, alarm: alarmId, deleteCount: deleteCount, error: error };
+    var ret = { userId: userId, itemId: itemId, deleteCount: deleteCount, error: error };
     res.status(200).json(ret);
 });
 
@@ -252,24 +254,41 @@ app.post('/api/register', async (req, res, next) => {
 
     if (!isTheNewUserDuplicate) {
 
-        const registerNewUser = { firstName: firstName, lastName: lastName, userName: userName, password: password, email: email }
+        const registerNewUser = {
+            firstName: firstName,
+            lastName: lastName,
+            userName: userName,
+            password: password,
+            email: email
+        }
+
         var error = '';
 
         try {
-
             const db = client.db();
             db.collection('users').insertOne(registerNewUser);
         } catch (e) {
-
             error = e.toString();
         }
 
-        var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: '' };
+        var ret = {
+            firstName: firstName,
+            lastName: lastName,
+            userName: userName,
+            email: email,
+            error: error
+        };
     }
 
     else if (isTheNewUserDuplicate) {
 
-        var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: 'User already exists please login instead' };
+        var ret = {
+            firstName: firstName,
+            lastName: lastName,
+            userName: userName,
+            email: email,
+            error: 'User already exists please login instead'
+        };
     }
 
     res.status(200).json(ret);
@@ -351,13 +370,116 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
     }
 });
 
+// Incoming: userId, weight, date, desiredWeight
+// Outgoing: userId, weight, date, desiredWeight, error
+// Purpose: adds a new weight and desiredWeight input to the database
+app.post('/api/addWeight', async (req, res, next) => {
+
+    const { userId, weight, date, desiredWeight } = req.body;
+    var error = '';
+
+    const newWeight = {
+        userId: userId,
+        weight: weight,
+        date: date,
+        desiredWeight: desiredWeight
+    }
+
+    try {
+        const db = client.db();
+        db.collection('weights').insertOne(newWeight);
+
+    } catch (e) {
+        error = e.toString();
+    }
+
+    var ret = {
+        userId: userId,
+        weight: weight,
+        date: date,
+        desiredWeight: desiredWeight,
+        error: error
+    };
+
+    res.status(200).json(ret);
+});
+
+
+async function calculateWeightDifferenceFromGoal(arrayOfWeight) {
+    return Math.abs(arrayOfWeight[0].desiredWeight - arrayOfWeight[0].weight);
+}
+
+// Purpose: this calculates the the percentage of the 2 most recent weight inputs, if
+//          there is only one weight it returns 0
+async function calculatePercentageOfWeightChange(arrayOfWeight) {
+    // if there is only one weight input
+    if (arrayOfWeight.length <= 1) {
+        return 0;
+    }
+
+    else {
+        var differenceFromPreviousWeight = Math.abs(arrayOfWeight[0].weight - arrayOfWeight[1].weight);
+
+        return Math.round((differenceFromPreviousWeight / arrayOfWeight[1].weight) * 100);
+    }
+}
+
+// Incomming: userId
+// Outgoing: userId, desiredWeight (most recent add), currentWeightDifferenceFromGoal (abs value), 
+//           percentageFromWeightGoal, arrayOfWeight[] 
+app.post('/api/outputWeight', async (req, res, next) => {
+
+    const { userId } = req.body;
+    var error = '';
+
+    const db = client.db();
+    var sizeOfWeightCollection = await db.collection('weights').countDocuments(
+        { "userId": userId }
+    );
+
+    // in the event that the user has not inputted any weights, then we need to add first
+    if (sizeOfWeightCollection <= 0) {
+        var ret = {
+            userId: userId,
+            desiredWeight: 0,
+            currentWeightDifferenceFromGoal: 0,
+            percentageFromWeightGoal: 0,
+            arrayOfWeight: [],
+            error: "No records found"
+        }
+    }
+
+    else if (sizeOfWeightCollection > 0) {
+        var arrayOfWeight = await db.collection('weights').find(
+            { "userId": userId }
+        ).sort(
+            { _id: -1 }
+        ).toArray();
+
+        // gets an integer value of the difference between desired weight and current weight
+        var weightDiffFromGoal = await calculateWeightDifferenceFromGoal(arrayOfWeight);
+        var percentageOfWeightChange = await calculatePercentageOfWeightChange(arrayOfWeight);
+
+        var ret = {
+            userId: userId,
+            currentdesiredWeight: arrayOfWeight[0].desiredWeight,
+            currentWeightDifferenceFromGoal: weightDiffFromGoal,
+            percentageOfWeightChange: percentageOfWeightChange,
+            arrayOfWeight: arrayOfWeight,
+            error: ""
+        }
+    }
+
+    res.status(200).json(ret);
+});
+
 // Incoming: ObjectId for Item, userId, workout, hy, rx, item name, water amount, objectId for the alarm, time, 
-//            monday - sunday boolean variables
+//           monday - sunday boolean variables
 // Outgoing: ObjectId for Item  , userId , workout, hy, rx , item name, waterAmount, Alarmid ,itemId, time, 
 //           monday - sunday boolean values, error string
 app.post('/api/addItem', async (req, res, next) => {
 
-    const { userId, workout, hy, rx, item, waterAmount,
+    const { userId, workout, hy, rx, item, waterAmount, date,
         time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
 
     var error = '';
@@ -375,7 +497,8 @@ app.post('/api/addItem', async (req, res, next) => {
             hy: hy,
             rx: rx,
             item: item,
-            waterAmount: waterAmount
+            waterAmount: waterAmount,
+            date: date
         }
 
         //Prepping an item package, try to see if item is added successfully into DB
@@ -413,7 +536,7 @@ app.post('/api/addItem', async (req, res, next) => {
             error = e.toString();
         }
 
-        //Packaging return value as outgoing elaborated above 
+        // packaging return value as outgoing elaborated above 
         var ret = {
             userId: userId,
             workout: workout,
@@ -421,6 +544,7 @@ app.post('/api/addItem', async (req, res, next) => {
             rx: rx,
             item: item,
             waterAmount: waterAmount,
+            date: date,
             itemId: newlyCreatedItem._id.toString().trim(),
             time: time,
             monday: monday,
@@ -445,6 +569,7 @@ app.post('/api/addItem', async (req, res, next) => {
             rx: rx,
             item: item,
             waterAmount: waterAmount,
+            date: date,
             itemId: itemfound._id.toString(),
             time: time,
             monday: monday,
@@ -458,7 +583,84 @@ app.post('/api/addItem', async (req, res, next) => {
         };
     }
 
-    //Return 
+    // return 
+    res.status(200).json(ret);
+});
+
+// Incoming: item id, item name, rx, hy, workout, time ,monday - sunday boolean vals
+// Outgoing: UPDATED VALUES IN SAME FORMAT ABOVE
+app.post('/api/editItem', async (req, res, next) => {
+
+    const { userId, itemId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+    var error = '';
+
+    // Initiate error string and attempt to retrieve both item and alarm
+
+    var itemretrieved = getItem(userId, item);
+    var alarmretrieved = getAlarm(itemId);
+
+    // In the event both the item and alarm have been successfully retrieved...
+
+    if (itemretrieved != null && alarmretrieved != null) {
+
+        // Update item object's and alarm object's returned properties with new updated values from parameters
+
+        itemretrieved.item = item;
+        itemretrieved.rx = rx;
+        itemretrieved.hy = hy;
+        itemretrieved.workout = workout;
+
+        alarmretrieved.time = time;
+        alarmretrieved.monday = monday;
+        alarmretrieved.tuesday = tuesday;
+        alarmretrieved.wednesday = wednesday;
+        alarmretrieved.thursday = thursday;
+        alarmretrieved.friday = friday;
+        alarmretrieved.saturday = saturday;
+        alarmretrieved.sunday = sunday;
+
+        // Attempt to connect to DB to push both item and alarm as an update.
+
+        try {
+
+            const db = client.db();
+            db.collection('items').updateOne(itemretrieved);
+            db.collection('alarms').updateOne(alarmretrieved);
+
+        } catch (e) {
+
+            error = e.toString();
+        }
+
+        // Append any error string in event of catch exception
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: error };
+
+    }
+
+    // return values both missing if neither object found
+    else if (itemretrieved == null && alarmretrieved == null) {
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Both alarm and item returned null value' };
+
+    }
+
+
+    // Return values updated with error string declaring item not found
+    else if (itemretrieved == null) {
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Item returned null value' };
+
+    }
+
+    // Return values updated with error string declaring alarm not found
+
+    else if (alarmretrieved == null) {
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm returned null value' };
+
+    }
+
     res.status(200).json(ret);
 });
 
