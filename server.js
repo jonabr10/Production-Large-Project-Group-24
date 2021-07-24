@@ -623,13 +623,22 @@ app.post('/api/editItem', async (req, res, next) => {
         newalarm.saturday = saturday;
         newalarm.sunday = sunday;
 
+        //set objects
+
+        var setitem = {
+            $set: newitem
+        }
+        var setalarm = {
+            $set: newalarm
+        }
+
         // Attempt to connect to DB to push both item and alarm as an update.
 
         try {
 
             const db = client.db();
-            db.collection('items').updateOne(itemretrieved , newitem);
-            db.collection('alarms').updateOne(alarmretrieved , newalarm);
+            db.collection('items').updateOne(itemretrieved , setitem);
+            db.collection('alarms').updateOne(alarmretrieved , setalarm);
 
         } catch (e) {
 
