@@ -201,17 +201,17 @@ app.post('/api/deleteItem', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
-// Incoming: userId, _id (alarm object), itemId
+// Incoming: userId, _id (alarm object)
 // Outgoing: userId, _id, itemId, deleteCount, error
 // Purpose: deletes an alarm and validates the existence of the alarm
 app.post('/api/deleteAlarm', async (req, res, next) => {
     var error = '';
     var deleteCount = 0;
 
-    const { userId, alarmId } = req.body;
+    const { userId, itemId } = req.body;
 
     // check if the alarm exists in the database
-    var alarmToBeDeleted = await getAlarm(alarmId);
+    var alarmToBeDeleted = await getAlarm(itemId);
 
     if (alarmToBeDeleted) {
         error = await deleteAlarm(alarmToBeDeleted);
@@ -221,19 +221,11 @@ app.post('/api/deleteAlarm', async (req, res, next) => {
     else if (!alarmToBeDeleted) {
         error = 'Alarm does not exist';
     }
-    
-    // var refreshedToken = null;      
-    // try      
-    // {
-    //     refreshedToken = token.refresh(jwtToken);      
-    // }      
-    // catch(e)      
-    // {        
-    //     console.log(e.message);      
-    // }      
-    var ret = { userId: userId, alarm: alarmId, deleteCount: deleteCount, error: error, /*jwtToken: refreshedToken*/ };
+
+    var ret = { userId: userId, itemId: itemId, deleteCount: deleteCount, error: error };
     res.status(200).json(ret);
 });
+
 
 // Incoming: new user credentials
 // Outgoing: none
