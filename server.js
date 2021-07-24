@@ -155,7 +155,7 @@ app.post('/api/deleteItem', async (req, res, next) => {
     var error = '';
     var deleteCount = 0;
 
-    const { userId, item } = req.body;
+    const { userId, item, jwtToken  } = req.body;
 
     // check if the item exists in the database
     var itemToBeDeleted = await getItem(userId, item);
@@ -186,7 +186,18 @@ app.post('/api/deleteItem', async (req, res, next) => {
         error = 'Item does not exist';
     }
 
-    var ret = { userId: userId, item: item, deleteCount: deleteCount, error: error };
+    var refreshedToken = null;      
+    try      
+    {
+        refreshedToken = token.refresh(jwtToken);      
+    }      
+    catch(e)      
+    {        
+        console.log(e.message);      
+    }      
+    // var ret = { error: error, jwtToken: refreshedToken };
+
+    var ret = { userId: userId, item: item, deleteCount: deleteCount, error: error, jwtToken: refreshedToken };
     res.status(200).json(ret);
 });
 
@@ -210,8 +221,17 @@ app.post('/api/deleteAlarm', async (req, res, next) => {
     else if (!alarmToBeDeleted) {
         error = 'Alarm does not exist';
     }
-
-    var ret = { userId: userId, alarm: alarmId, deleteCount: deleteCount, error: error };
+    
+    // var refreshedToken = null;      
+    // try      
+    // {
+    //     refreshedToken = token.refresh(jwtToken);      
+    // }      
+    // catch(e)      
+    // {        
+    //     console.log(e.message);      
+    // }      
+    var ret = { userId: userId, alarm: alarmId, deleteCount: deleteCount, error: error, /*jwtToken: refreshedToken*/ };
     res.status(200).json(ret);
 });
 
@@ -237,6 +257,16 @@ app.post('/api/register', async (req, res, next) => {
 
             error = e.toString();
         }
+
+        try        
+        {          
+            const token = require("./createJWT.js");          
+            ret = token.createToken( fn, ln, id, email );        
+        }        
+        catch(e)        
+        {          
+            ret = {error:e.message};        
+        }      
 
         var ret = { firstName: firstName, lastName: lastName, userName: userName, email: email, error: '' };
     }
@@ -300,7 +330,7 @@ app.post('/api/login', async (req, res, next) => {
 // Outgoing: all user Alarms[] w/ userId
 app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
-    const { userId } = req.body;
+    const { userId, jwtToken } = req.body;
 
     const db = client.db();
     const alarmResults = await db.collection('alarms').find(
@@ -328,7 +358,17 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
             });
         }
 
-        var ret = { Alarms: _retAlarms, error: " " };
+        var refreshedToken = null;      
+        try      
+        {        
+            refreshedToken = token.refresh(jwtToken);      
+        }      
+        catch(e)      
+        {        
+            console.log(e.message);      
+        }      
+        // var ret = { results:_ret, error: error, jwtToken: refreshedToken };
+        var ret = { Alarms: _retAlarms, error: " ", jwtToken: refreshedToken };
         res.status(200).json(ret);
     }
 
@@ -406,7 +446,7 @@ app.post('/api/search', async (req, res, next) => {
 // Purpose: adds a new weight and desiredWeight input to the database
 app.post('/api/addWeight', async (req, res, next) => {
 
-    const { userId, weight, date, desiredWeight } = req.body;
+    const { userId, weight, date, desiredWeight, jwtToken } = req.body;
     var error = '';
 
     const newWeight = {
@@ -432,6 +472,16 @@ app.post('/api/addWeight', async (req, res, next) => {
         error: error
     };
 
+    var refreshedToken = null;      
+    try      
+    {
+        refreshedToken = token.refresh(jwtToken);      
+    }      
+    catch(e)      
+    {        
+        console.log(e.message);      
+    }      
+    var ret = { error: error, jwtToken: refreshedToken };
     res.status(200).json(ret);
 });
 
@@ -460,7 +510,7 @@ async function calculatePercentageOfWeightChange(arrayOfWeight) {
 //           percentageFromWeightGoal, arrayOfWeight[]
 app.post('/api/outputWeight', async (req, res, next) => {
 
-    const { userId } = req.body;
+    const { userId, jwtToken } = req.body;
     var error = '';
 
     const db = client.db();
@@ -491,13 +541,23 @@ app.post('/api/outputWeight', async (req, res, next) => {
         var weightDiffFromGoal = await calculateWeightDifferenceFromGoal(arrayOfWeight);
         var percentageOfWeightChange = await calculatePercentageOfWeightChange(arrayOfWeight);
 
+        var refreshedToken = null;      
+        try      
+        {        
+            refreshedToken = token.refresh(jwtToken);      
+        }      
+        catch(e)      
+        {        
+            console.log(e.message);      
+        }      
+        // var ret = { results:_ret, error: error, jwtToken: refreshedToken };
         var ret = {
             userId: userId,
             currentdesiredWeight: arrayOfWeight[0].desiredWeight,
             currentWeightDifferenceFromGoal: weightDiffFromGoal,
             percentageOfWeightChange: percentageOfWeightChange,
             arrayOfWeight: arrayOfWeight,
-            error: ""
+            error: "", jwtToken: refreshedToken
         }
     }
 
@@ -637,6 +697,7 @@ app.post('/api/addItem', async (req, res, next) => {
     // return
     res.status(200).json(ret);
 });
+
 
 
 app.use((req, res, next) => {
