@@ -13,7 +13,7 @@ app.post('/api/editItem', async(req, res, next) => {
 
     //In the event both the item and alarm have been successfully retrieved...
 
-    if (itemretrieved != null && alarmretrieved != null){
+    if (itemretrieved != null && alarmretrieved.length > 0){
 
         //Update item object's and alarm object's returned properties with new updated values from parameters
 
@@ -47,11 +47,11 @@ app.post('/api/editItem', async(req, res, next) => {
         //Append any error string in event of catch exception
 
         var ret = {item: item, rx: rx, hy: hy, workout: workout, time: time,monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: error };
-
+        r = ret;
     }
 
     //return values both missing if neither object found
-    else if (itemretrieved == null && alarmretrieved == null){
+    else if (itemretrieved == null && alarmretrieved.length == 0){
 
         var ret = {item: item, rx: rx, hy: hy, workout: workout, time: time,monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Both alarm and item returned null value' };
 
@@ -67,7 +67,7 @@ app.post('/api/editItem', async(req, res, next) => {
 
        //Return values updated with error string declaring alarm not found
 
-   else if (alarmretrieved == null){
+   else if (alarmretrieved.length  == 0){
 
     var ret = {item: item, rx: rx, hy: hy, workout: workout, time: time,monday : monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm returned null value' };
 
