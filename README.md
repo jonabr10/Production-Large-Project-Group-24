@@ -91,4 +91,20 @@ Connecting to the Heroku Server
 
 <terminal cmd> git push heroku master 
 
+========================
+COMMANDS NEEDED FOR JWT
+========================
+
+<terminal cmd> sudo npm install jsonwebtoken
+
+<terminal cmd> sudo npm install dotenv 
+   (you may have done this previously. Also do this in the server directory and the Frontend directory)
+
+<go to> .env file and add: ACCESS_TOKEN_SECRET=secret
+
+<create file> createJWT.js
+
+
 --->
+
+
