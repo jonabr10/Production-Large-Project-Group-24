@@ -601,33 +601,35 @@ app.post('/api/editItem', async (req, res, next) => {
     var itemretrieved = getItem(userId, item);
     var alarmretrieved = getAlarm(itemId);
 
+    var newitem = itemretrieved;
+    var newalarm = alarmretrieved;
     // In the event both the item and alarm have been successfully retrieved...
 
     if (itemretrieved != null && alarmretrieved != null) {
 
         // Update item object's and alarm object's returned properties with new updated values from parameters
 
-        itemretrieved.item = item;
-        itemretrieved.rx = rx;
-        itemretrieved.hy = hy;
-        itemretrieved.workout = workout;
+        newitem.item = item;
+        newitem.rx = rx;
+        newitem.hy = hy;
+        newitem.workout = workout;
 
-        alarmretrieved.time = time;
-        alarmretrieved.monday = monday;
-        alarmretrieved.tuesday = tuesday;
-        alarmretrieved.wednesday = wednesday;
-        alarmretrieved.thursday = thursday;
-        alarmretrieved.friday = friday;
-        alarmretrieved.saturday = saturday;
-        alarmretrieved.sunday = sunday;
+        newalarm.time = time;
+        newalarm.monday = monday;
+        newalarm.tuesday = tuesday;
+        newalarm.wednesday = wednesday;
+        newalarm.thursday = thursday;
+        newalarm.friday = friday;
+        newalarm.saturday = saturday;
+        newalarm.sunday = sunday;
 
         // Attempt to connect to DB to push both item and alarm as an update.
 
         try {
 
             const db = client.db();
-            db.collection('items').updateOne(itemretrieved);
-            db.collection('alarms').updateOne(alarmretrieved);
+            db.collection('items').updateOne(itemretrieved , newitem);
+            db.collection('alarms').updateOne(alarmretrieved , newalarm);
 
         } catch (e) {
 
