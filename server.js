@@ -18,7 +18,7 @@ const MongoClient = require('mongodb').MongoClient;
 const client = new MongoClient(url);
 client.connect();
 
-// Creating JWT:
+// Creating jwtToken:
 var token = require('./createJWT.js');
 
 // 3 categories:
