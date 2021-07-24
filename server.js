@@ -26,8 +26,8 @@ var token = require('./createJWT.js');
 // - prescription
 // - hydration
 
-// Incoming: user object
-// Outgoing: users[]
+// Incoming: userName, email
+// Outgoing: user (singular)
 async function getUser(userName, email) {
     const db = client.db();
     var _userName = (userName.toString()).trim();
@@ -45,8 +45,8 @@ async function getUser(userName, email) {
     return userResult;
 }
 
-// Incoming: item objects
-// Outgoing: alarms[]
+// Incoming: userId, item name
+// Outgoing: item (singular)
 async function getItem(userId, itemName) {
 
     const db = client.db();
@@ -64,12 +64,34 @@ async function getItem(userId, itemName) {
     return itemResult;
 }
 
-// Incoming: _id from items collections
-// Outgoing: alarms[]
-async function getAlarms(itemResult) {
+// Incoming: _id (alarm object), 
+// Outgoing: an already existing alarm (singular) 
+async function getAlarm(itemId) {
+
+    try {
+        // setup ObjectId format required for an _id (alarm object) search
+        // var ObjectId = require('mongodb').ObjectId;
+        // var o_id = ObjectId(alarmObjectId);
+
+        var _itemId = (itemId.toString()).trim();
+
+        const db = client.db();
+        const alarmResult = await db.collection('alarms').findOne(
+            { "itemId": _itemId }
+        )
+        return alarmResult;
+    }
+    catch (e) {
+        return null;
+    }
+}
+
+// Incoming: (item object)
+// Outgoing: alarms[] (multiple)
+async function getAlarms(itemObject) {
 
     const db = client.db();
-    var _itemId = (itemResult._id.toString()).trim();
+    var _itemId = (itemObject._id.toString()).trim();
 
     const alarmResults = await db.collection('alarms').find(
         { "itemId": _itemId }
@@ -99,25 +121,11 @@ async function getAlarms(itemResult) {
     return _retAlarms;
 }
 
-// Incoming: alarm object
-// Outgoing: none
-function debugAlarmObject(alarmObj) {
-    console.log('alarm[] ' + typeof alarmObj._id + ' _id/ObjectId value: ' + alarmObj._id);
-    console.log('alarm[] ' + typeof alarmObj.userId + ' userId value: ' + alarmObj.userId);
-    console.log('alarm[] ' + typeof alarmObj.itemId + ' itemId value: ' + alarmObj.itemId);
-    console.log('alarm[] ' + typeof alarmObj.time + ' time value: ' + alarmObj.time);
-    console.log('alarm[] ' + typeof alarmObj.monday + ' monday value: ' + alarmObj.monday);
-    console.log('alarm[] ' + typeof alarmObj.tuesday + ' tuesday value: ' + alarmObj.tuesday);
-    console.log('alarm[] ' + typeof alarmObj.wednesday + ' wednesday value: ' + alarmObj.wednesday);
-    console.log('alarm[] ' + typeof alarmObj.thursday + ' thursday value: ' + alarmObj.thursday);
-    console.log('alarm[] ' + typeof alarmObj.friday + ' friday value: ' + alarmObj.friday);
-    console.log('alarm[] ' + typeof alarmObj.saturday + ' saturday value: ' + alarmObj.saturday);
-    console.log('alarm[] ' + typeof alarmObj.sunday + ' sunday value: ' + alarmObj.sunday);
-}
-
+// Incoming: (item object)
+// Outgoing: error message
+// Purpose: deletes an item from the collection
 async function deleteItem(itemToBeDeleted) {
     var error = '';
-
     try {
         const db = client.db();
         db.collection('items').deleteOne(
@@ -131,6 +139,27 @@ async function deleteItem(itemToBeDeleted) {
     return error;
 }
 
+// Incoming: (item object)
+// Outgoing: error message
+// Purpose: deletes an alarm (singular) from the collection
+async function deleteAlarm(alarmToBeDeleted) {
+    var error = '';
+    try {
+        const db = client.db();
+        db.collection('alarms').deleteOne(
+            { "_id": alarmToBeDeleted._id }
+        )
+
+    } catch (e) {
+        error = e.toString();
+    }
+
+    return error;
+}
+
+// Incoming: (item object)
+// Outgoing: error message
+// Purpose: deletes alarms (multiple) associated to item's _id value
 async function deleteAlarms(itemToBeDeleted) {
     var error = '';
     var _itemId = (itemToBeDeleted._id.toString()).trim();
@@ -208,7 +237,7 @@ app.post('/api/deleteAlarm', async (req, res, next) => {
     var error = '';
     var deleteCount = 0;
 
-    const { userId, itemId } = req.body;
+    const { userId, itemId, jwtToken } = req.body;
 
     // check if the alarm exists in the database
     var alarmToBeDeleted = await getAlarm(itemId);
@@ -222,7 +251,17 @@ app.post('/api/deleteAlarm', async (req, res, next) => {
         error = 'Alarm does not exist';
     }
 
-    var ret = { userId: userId, itemId: itemId, deleteCount: deleteCount, error: error };
+    var refreshedToken = null;      
+    try      
+    {
+        refreshedToken = token.refresh(jwtToken);      
+    }      
+    catch(e)      
+    {        
+        console.log(e.message);      
+    }      
+    // var ret = { error: error, jwtToken: refreshedToken };
+    var ret = { userId: userId, itemId: itemId, deleteCount: deleteCount, error: error, jwtToken: refreshedToken };
     res.status(200).json(ret);
 });
 
@@ -690,6 +729,82 @@ app.post('/api/addItem', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
+// Incoming: item id, item name, rx, hy, workout, time ,monday - sunday boolean vals
+// Outgoing: UPDATED VALUES IN SAME FORMAT ABOVE
+app.post('/api/editItem', async (req, res, next) => {
+
+    const { userId, itemId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+    var error = '';
+
+    // Initiate error string and attempt to retrieve both item and alarm
+
+    var itemretrieved = getItem(userId, item);
+    var alarmretrieved = getAlarm(itemId);
+
+    // In the event both the item and alarm have been successfully retrieved...
+
+    if (itemretrieved != null && alarmretrieved != null) {
+
+        // Update item object's and alarm object's returned properties with new updated values from parameters
+
+        itemretrieved.item = item;
+        itemretrieved.rx = rx;
+        itemretrieved.hy = hy;
+        itemretrieved.workout = workout;
+
+        alarmretrieved.time = time;
+        alarmretrieved.monday = monday;
+        alarmretrieved.tuesday = tuesday;
+        alarmretrieved.wednesday = wednesday;
+        alarmretrieved.thursday = thursday;
+        alarmretrieved.friday = friday;
+        alarmretrieved.saturday = saturday;
+        alarmretrieved.sunday = sunday;
+
+        // Attempt to connect to DB to push both item and alarm as an update.
+
+        try {
+
+            const db = client.db();
+            db.collection('items').updateOne(itemretrieved);
+            db.collection('alarms').updateOne(alarmretrieved);
+
+        } catch (e) {
+
+            error = e.toString();
+        }
+
+        // Append any error string in event of catch exception
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: error };
+
+    }
+
+    // return values both missing if neither object found
+    else if (itemretrieved == null && alarmretrieved == null) {
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Both alarm and item returned null value' };
+
+    }
+
+
+    // Return values updated with error string declaring item not found
+    else if (itemretrieved == null) {
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Item returned null value' };
+
+    }
+
+    // Return values updated with error string declaring alarm not found
+
+    else if (alarmretrieved == null) {
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm returned null value' };
+
+    }
+
+    res.status(200).json(ret);
+});
 
 
 app.use((req, res, next) => {
