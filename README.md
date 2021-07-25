@@ -109,5 +109,21 @@ Email Verification and Password Reset Dependencies
 Source: https://medium.com/swlh/how-to-build-a-node-js-authentication-api-with-email-verification-image-upload-and-password-reset-95e35fd46be1
 
 <terminal cmd> npm install jade @sendgrid/mail --save
-  
+
+========================
+COMMANDS NEEDED FOR JWT
+========================
+
+<terminal cmd> sudo npm install jsonwebtoken
+
+<terminal cmd> sudo npm install dotenv 
+   (you may have done this previously. Also do this in the server directory and the Frontend directory)
+
+<go to> .env file and add: ACCESS_TOKEN_SECRET=secret
+
+<create file> createJWT.js
+
+
 --->
+
+

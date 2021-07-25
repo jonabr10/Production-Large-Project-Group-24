@@ -19,6 +19,9 @@ const { get } = require('http');
 const client = new MongoClient(url);
 client.connect();
 
+// creating jwtToken
+var token = require('./createJWT.js');
+
 // Incoming: userName, email
 // Outgoing: user (singular)
 async function getUser(userName, email) {
@@ -181,7 +184,23 @@ app.post('/api/deleteItem', async (req, res, next) => {
     var error = '';
     var deleteCount = 0;
 
-    const { userId, item } = req.body;
+    const { userId, item, jwtToken } = req.body;
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 
     // check if the item exists in the database
     var itemToBeDeleted = await getItem(userId, item);
@@ -213,7 +232,25 @@ app.post('/api/deleteItem', async (req, res, next) => {
         error = 'Item does not exist';
     }
 
-    var ret = { userId: userId, item: item, deleteCount: deleteCount, error: error };
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.l
+        og(e.message);
+    }
+
+    var ret = {
+        userId: userId,
+        item: item,
+        deleteCount: deleteCount,
+        error: error,
+        jwtToken: refreshedToken
+    };
+
     res.status(200).json(ret);
 });
 
@@ -224,7 +261,23 @@ app.post('/api/deleteAlarm', async (req, res, next) => {
     var error = '';
     var deleteCount = 0;
 
-    const { userId, itemId } = req.body;
+    const { userId, itemId, jwtToken } = req.body;
+
+    // validate the time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 
     // check if the alarm exists in the database
     var alarmToBeDeleted = await getAlarm(itemId);
@@ -238,7 +291,23 @@ app.post('/api/deleteAlarm', async (req, res, next) => {
         error = 'Alarm does not exist';
     }
 
-    var ret = { userId: userId, itemId: itemId, deleteCount: deleteCount, error: error };
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    var ret = {
+        userId: userId,
+        itemId: itemId,
+        deleteCount: deleteCount,
+        error: error,
+        jwtToken: refreshedToken
+    };
+
     res.status(200).json(ret);
 });
 
@@ -248,6 +317,7 @@ app.post('/api/deleteAlarm', async (req, res, next) => {
 app.post('/api/register', async (req, res, next) => {
 
     const { firstName, lastName, userName, password, email } = req.body;
+    var error = '';
 
     // Check to see if the new user already exists in the database
     var isTheNewUserDuplicate = await getUser(userName, password);
@@ -262,14 +332,44 @@ app.post('/api/register', async (req, res, next) => {
             email: email
         }
 
-        var error = '';
-
         try {
             const db = client.db();
             db.collection('users').insertOne(registerNewUser);
         } catch (e) {
             error = e.toString();
         }
+
+        var getNewUser = getUser(userName, email);
+
+        // generates a new JWT key
+        try {
+            const token = require("./createJWT.js");
+
+            _token = token.createToken(
+                firstName,
+                lastName,
+                getNewUser.userId,
+                email
+            );
+
+            var ret = {
+                firstName: firstName,
+                lastName: lastName,
+                userName: userName,
+                email: email,
+                error: error,
+                _token
+            };
+        }
+        catch (e) {
+            ret = {
+                error: e.message
+            };
+        }
+    }
+
+    else if (isTheNewUserDuplicate) {
+        error = 'User already exists please login instead';
 
         var ret = {
             firstName: firstName,
@@ -280,17 +380,6 @@ app.post('/api/register', async (req, res, next) => {
         };
     }
 
-    else if (isTheNewUserDuplicate) {
-
-        var ret = {
-            firstName: firstName,
-            lastName: lastName,
-            userName: userName,
-            email: email,
-            error: 'User already exists please login instead'
-        };
-    }
-
     res.status(200).json(ret);
 });
 
@@ -298,10 +387,9 @@ app.post('/api/register', async (req, res, next) => {
 // Outgoing: id, firstName, lastName, email, error
 // Purpose: login for user, validates user's inputted login/password data
 app.post('/api/login', async (req, res, next) => {
-
+    const { login, password } = req.body;
     var error = '';
 
-    const { login, password } = req.body;
     const db = client.db();
     const results = await
         db.collection('users').find({ userName: login, password: password }).toArray();
@@ -317,11 +405,35 @@ app.post('/api/login', async (req, res, next) => {
         ln = results[0].lastName;
         email = results[0].email
 
-        var ret = { id: id, firstName: fn, lastName: ln, email: email, error: '' };
+
+        try {
+            const token = require("./createJWT.js");
+            jwtToken = token.createToken(fn, ln, id, email);
+
+            var ret = {
+                id: id,
+                firstName: fn,
+                lastName: ln,
+                email: email,
+                error: '',
+                jwtToken
+            };
+        }
+        catch (e) {
+            ret = {
+                error: e.message
+            };
+        }
     }
 
-    else if (results.length <= 0) {
-        var ret = { id: id, firstName: fn, lastName: ln, email: email, error: 'Invalid Username/Password' };
+    else {
+        var ret = {
+            id: id,
+            firstName: fn,
+            lastName: ln,
+            email: email,
+            error: 'Invalid Username/Password'
+        };
     }
 
     res.status(200).json(ret);
@@ -332,7 +444,23 @@ app.post('/api/login', async (req, res, next) => {
 // Purpose: provides a JSON array of all the alarms that is associated to userId value
 app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
-    const { userId } = req.body;
+    const { userId, jwtToken } = req.body;
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 
     const db = client.db();
     const alarmResults = await db.collection('alarms').find(
@@ -360,12 +488,30 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
             });
         }
 
-        var ret = { Alarms: _retAlarms, error: " " };
+        var refreshedToken = null;
+
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
+        var ret = {
+            Alarms: _retAlarms,
+            error: " ",
+            jwtToken: refreshedToken
+        };
+
         res.status(200).json(ret);
     }
 
     else {
-        var ret = { results: _ret, error: "No records found" };
+        var ret = {
+            results: _ret,
+            error: "No records found"
+        };
+
         res.status(200).json(ret);
     }
 });
@@ -375,8 +521,24 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
 // Purpose: adds a new weight and desiredWeight input to the database
 app.post('/api/addWeight', async (req, res, next) => {
 
-    const { userId, weight, date, desiredWeight } = req.body;
+    const { userId, weight, date, desiredWeight, jwtToken } = req.body;
     var error = '';
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 
     const newWeight = {
         userId: userId,
@@ -393,12 +555,23 @@ app.post('/api/addWeight', async (req, res, next) => {
         error = e.toString();
     }
 
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
     var ret = {
         userId: userId,
         weight: weight,
         date: date,
         desiredWeight: desiredWeight,
-        error: error
+        error: error,
+        jwtToken: refreshedToken
     };
 
     res.status(200).json(ret);
@@ -429,8 +602,24 @@ async function calculatePercentageOfWeightChange(arrayOfWeight) {
 //           percentageFromWeightGoal, arrayOfWeight[] 
 app.post('/api/outputWeight', async (req, res, next) => {
 
-    const { userId } = req.body;
+    const { userId, jwtToken } = req.body;
     var error = '';
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 
     const db = client.db();
     var sizeOfWeightCollection = await db.collection('weights').countDocuments(
@@ -460,13 +649,22 @@ app.post('/api/outputWeight', async (req, res, next) => {
         var weightDiffFromGoal = await calculateWeightDifferenceFromGoal(arrayOfWeight);
         var percentageOfWeightChange = await calculatePercentageOfWeightChange(arrayOfWeight);
 
+        var refreshedToken = null;
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
         var ret = {
             userId: userId,
             currentdesiredWeight: arrayOfWeight[0].desiredWeight,
             currentWeightDifferenceFromGoal: weightDiffFromGoal,
             percentageOfWeightChange: percentageOfWeightChange,
             arrayOfWeight: arrayOfWeight,
-            error: ""
+            error: "",
+            jwtToken: refreshedToken
         }
     }
 
@@ -480,7 +678,25 @@ app.post('/api/outputWeight', async (req, res, next) => {
 app.post('/api/addItem', async (req, res, next) => {
 
     const { userId, workout, hy, rx, item, waterAmount, date,
-        time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+        time, monday, tuesday, wednesday, thursday, friday, saturday, sunday, jwtToken } = req.body;
+
+
+    // validate time remaining of JWT 
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
 
     var error = '';
 
@@ -536,6 +752,16 @@ app.post('/api/addItem', async (req, res, next) => {
             error = e.toString();
         }
 
+        // refresh JWT
+        var refreshedToken = null;
+
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
         // packaging return value as outgoing elaborated above 
         var ret = {
             userId: userId,
@@ -554,7 +780,8 @@ app.post('/api/addItem', async (req, res, next) => {
             friday: friday,
             saturday: saturday,
             sunday: sunday,
-            error: ''
+            error: '',
+            jwtToken: refreshedToken
         };
     }
 
@@ -670,8 +897,24 @@ app.post('/api/editItem', async (req, res, next) => {
 // Purpose:  searches the database based on the userId and item (item name)
 app.post('/api/search', async (req, res, next) => {
 
+    const { userId, search, jwtToken } = req.body;
     var error = '';
-    const { userId, search } = req.body;
+
+    // validate time remaining of JWT 
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 
     var _search = search.trim();
     const db = client.db();
@@ -704,16 +947,47 @@ app.post('/api/search', async (req, res, next) => {
             });
         }
 
-        var ret = { results: _ret, error: error };
+        // refresh JWT
+        var refreshedToken = null;
+
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
+        var ret = {
+            results: _ret,
+            error: error,
+            jwtToken: refreshedToken
+        };
+
         res.status(200).json(ret);
     }
 
     else {
-        var ret = { results: _ret, error: "No records found" };
+        // refresh JWT
+        var refreshedToken = null;
+
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
+        var ret = {
+            results: _ret,
+            error: "No records found",
+            jwtToken: refreshedToken
+        };
+
         res.status(200).json(ret);
     }
 
 });
+
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
