@@ -17,11 +17,11 @@ Things you should already have
 Connecting to the mongoDB database
 ==================================
 
-<go to> From the terminal/commandLine > navigate to project folder 
+<go to> From the terminal/commandLine > navigate to project folder
 
 <if> You do not have a .gitignore with the following content
     <terminal cmd> touch .gitignore
-        <contents> 
+        <contents>
         node_modules
         .env
         .DS_Store
@@ -34,7 +34,7 @@ Connecting to the mongoDB database
     <caution> running the command may throw some errors
         <what if> Error: Cannot find module 'express'
             <terminal cmd> npm install express
-        
+
         <what if> Error: Cannot find module 'dotenv'
             <terminal cmd> npm install dotenv
 
@@ -101,5 +101,18 @@ Starting Local Testing!
 
 <terminal two cmd> sudo npm start
 
-  
+========================
+COMMANDS NEEDED FOR JWT
+========================
+
+<terminal cmd> sudo npm install jsonwebtoken
+
+<terminal cmd> sudo npm install dotenv
+   (you may have done this previously. Also do this in the server directory and the Frontend directory)
+
+<go to> .env file and add: ACCESS_TOKEN_SECRET=secret
+
+<create file> createJWT.js
+
+
 --->
