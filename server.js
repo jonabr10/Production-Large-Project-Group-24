@@ -239,8 +239,7 @@ app.post('/api/deleteItem', async (req, res, next) => {
         refreshedToken = token.refresh(jwtToken);
     }
     catch (e) {
-        console.l
-        og(e.message);
+        console.log(e.message);
     }
 
     var ret = {
