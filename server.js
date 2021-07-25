@@ -478,7 +478,7 @@ app.post('/api/register', async (req, res, next) => {
         try {
             const token = require("./createJWT.js");
 
-            _token = token.createToken(
+            jwtToken = token.createToken(
                 firstName,
                 lastName,
                 getNewUser.userId,
@@ -491,7 +491,7 @@ app.post('/api/register', async (req, res, next) => {
                 userName: userName,
                 email: email,
                 error: error,
-                _token
+                jwtToken
             };
         }
         catch (e) {
@@ -1120,7 +1120,6 @@ app.post('/api/search', async (req, res, next) => {
     }
 
 });
-
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
