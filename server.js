@@ -18,6 +18,7 @@ require('dotenv').config();
 const url = process.env.MONGODB_URI;
 const MongoClient = require('mongodb').MongoClient;
 const { get } = require('http');
+const { text } = require('express');
 const client = new MongoClient(url);
 client.connect();
 
@@ -593,43 +594,48 @@ app.post('/api/addItem', async (req, res, next) => {
 // Outgoing: UPDATED VALUES IN SAME FORMAT ABOVE
 app.post('/api/editItem', async (req, res, next) => {
 
-    const { userId, itemId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+    const { userId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
     var error = '';
 
     // Initiate error string and attempt to retrieve both item and alarm
 
-    var itemretrieved = getItem(userId, item);
-    var alarmretrieved = getAlarm(itemId);
+    var itemretrieved = await getItem(userId, item);
+        
 
-    var newitem = itemretrieved;
-    var newalarm = alarmretrieved;
     // In the event both the item and alarm have been successfully retrieved...
 
-    if (itemretrieved != null && alarmretrieved != null) {
+    if (itemretrieved != null) {
 
         // Update item object's and alarm object's returned properties with new updated values from parameters
+        const itemId = itemretrieved._id;
+        var alarmretrieved = await getAlarm(itemId);
 
-        newitem.item = item;
-        newitem.rx = rx;
-        newitem.hy = hy;
-        newitem.workout = workout;
+        var updatedItem = {
+            item : item, 
+            rx : rx, 
+            hy : hy,
+            workout: workout
+        }
 
-        newalarm.time = time;
-        newalarm.monday = monday;
-        newalarm.tuesday = tuesday;
-        newalarm.wednesday = wednesday;
-        newalarm.thursday = thursday;
-        newalarm.friday = friday;
-        newalarm.saturday = saturday;
-        newalarm.sunday = sunday;
+        var updatedAlarm = {
+            time : time,
+            monday : monday,
+            tuesday : tuesday, 
+            wednesday : wednesday, 
+            thursday : thursday,
+            friday : friday, 
+            saturday : saturday,
+            sunday : sunday
+        }
 
-        //set objects
-
-        var setitem = {
-            $set: newitem
+        
+    
+        var setitem = 
+        {
+            $set: updatedItem
         }
         var setalarm = {
-            $set: newalarm
+            $set: updatedAlarm
         }
 
         // Attempt to connect to DB to push both item and alarm as an update.
@@ -637,8 +643,9 @@ app.post('/api/editItem', async (req, res, next) => {
         try {
 
             const db = client.db();
-            db.collection('items').updateOne(itemretrieved , setitem);
-            db.collection('alarms').updateOne(alarmretrieved , setalarm);
+
+            db.collection('items').updateOne({userId: userId} , setitem);
+            db.collection('alarms').updateOne({itemId: itemId} , setalarm);
 
         } catch (e) {
 
@@ -647,14 +654,19 @@ app.post('/api/editItem', async (req, res, next) => {
 
         // Append any error string in event of catch exception
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: error };
-
-    }
-
-    // return values both missing if neither object found
-    else if (itemretrieved == null && alarmretrieved == null) {
-
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Both alarm and item returned null value' };
+        var ret = { item: item, 
+                rx: rx,
+                hy: hy, 
+                workout: workout,
+                time: time,
+                monday: monday,
+                tuesday: tuesday,
+                wednesday: wednesday,
+                thursday: thursday,
+                friday: friday,
+                saturday: saturday,
+                sunday: sunday,
+                error: error };
 
     }
 
@@ -662,20 +674,43 @@ app.post('/api/editItem', async (req, res, next) => {
     // Return values updated with error string declaring item not found
     else if (itemretrieved == null) {
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Item returned null value' };
-
+        var ret = { item: item, 
+            rx: rx,
+            hy: hy, 
+            workout: workout,
+            time: time,
+            monday: monday,
+            tuesday: tuesday,
+            wednesday: wednesday,
+            thursday: thursday,
+            friday: friday,
+            saturday: saturday,
+            sunday: sunday,
+            error: "Item returned null" };
     }
 
     // Return values updated with error string declaring alarm not found
 
     else if (alarmretrieved == null) {
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm returned null value' };
-
+        var ret = { item: item, 
+            rx: rx,
+            hy: hy, 
+            workout: workout,
+            time: time,
+            monday: monday,
+            tuesday: tuesday,
+            wednesday: wednesday,
+            thursday: thursday,
+            friday: friday,
+            saturday: saturday,
+            sunday: sunday,
+            error: "Alarm returned null" };
     }
 
     res.status(200).json(ret);
 });
+
 
 
 // Incoming: userId, search
