@@ -102,27 +102,33 @@ Starting Local Testing!
 
 <terminal two cmd> sudo npm start
 
-==================================================
-Email Verification and Password Reset Dependencies
-==================================================
+===============================
+Email Verification Dependencies
+===============================
 
-Source: https://medium.com/swlh/how-to-build-a-node-js-authentication-api-with-email-verification-image-upload-and-password-reset-95e35fd46be1
+Source: https://nodemailer.com/about/
 
-<terminal cmd> npm install jade @sendgrid/mail --save
+<terminal cmd> npm install nodemailer
 
-========================
-COMMANDS NEEDED FOR JWT
-========================
+<go to> .env file
+    <add content>
+    EMAIL_USER="health.n.wellness.service@gmail.com"
+    EMAIL_PASSWORD="COP4331@24"
+
+<IMPORTANT> you MUST change the html link (line 19 sendEmail.js) based on the environment are currently working on!
+
+================
+JWT Dependencies
+================
 
 <terminal cmd> sudo npm install jsonwebtoken
 
 <terminal cmd> sudo npm install dotenv 
    (you may have done this previously. Also do this in the server directory and the Frontend directory)
 
-<go to> .env file and add: ACCESS_TOKEN_SECRET=secret
-
-<create file> createJWT.js
-
+<go to> .env file
+    <add content>
+    ACCESS_TOKEN_SECRET=secret
 
 --->
 
