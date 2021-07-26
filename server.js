@@ -950,7 +950,7 @@ app.post('/api/addItem', async (req, res, next) => {
 // Outgoing: UPDATED VALUES IN SAME FORMAT ABOVE
 app.post('/api/editItem', async (req, res, next) => {
 
-    const { userId, itemId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+    const { userId, itemId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday, jwtToken } = req.body;
     var error = '';
 
     // Initiate error string and attempt to retrieve both item and alarm
@@ -991,16 +991,35 @@ app.post('/api/editItem', async (req, res, next) => {
             error = e.toString();
         }
 
+        // Refresh jwtToken
+
+        var refreshedToken = null;
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
         // Append any error string in event of catch exception
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: error };
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: error, jwtToken: refreshedToken };
 
     }
 
     // return values both missing if neither object found
     else if (itemretrieved == null && alarmretrieved == null) {
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Both alarm and item returned null value' };
+        // Refresh jwtToken
+        
+        var refreshedToken = null;
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Both alarm and item returned null value', jwtToken: refreshedToken };
 
     }
 
@@ -1008,7 +1027,17 @@ app.post('/api/editItem', async (req, res, next) => {
     // Return values updated with error string declaring item not found
     else if (itemretrieved == null) {
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Item returned null value' };
+        // Refresh jwtToken
+        
+        var refreshedToken = null;
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Item returned null value', jwtToken: refreshedToken };
 
     }
 
@@ -1016,13 +1045,22 @@ app.post('/api/editItem', async (req, res, next) => {
 
     else if (alarmretrieved == null) {
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm returned null value' };
+        // Refresh jwtToken
+        
+        var refreshedToken = null;
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
+        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm returned null value', jwtToken: refreshedToken };
 
     }
 
     res.status(200).json(ret);
 });
-
 
 // Incoming: userId, search
 // Outgoing: results[], error
