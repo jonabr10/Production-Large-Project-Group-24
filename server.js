@@ -1062,7 +1062,6 @@ app.post('/api/editItem', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
-
 // Incoming: userId, search
 // Outgoing: results[], error
 // Purpose:  searches the database based on the userId and item (item name)
