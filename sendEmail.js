@@ -1,7 +1,13 @@
 const nodemailer = require("nodemailer");
+let pathBuilder = require('./frontend/src/Path');
+
 require("dotenv").config();
 
 exports.sendVerification = async function (email, uniqueString) {
+    // the api route contain the route to the api for verify and the uniqueString identifier for a
+    // specific user
+    var apiRoute = "verify/" + uniqueString;
+
     let transporter = nodemailer.createTransport({
         service: "Gmail",
         auth: {
@@ -16,8 +22,7 @@ exports.sendVerification = async function (email, uniqueString) {
         to: email,
         subject: "Health-n-Wellness Registration Verification",
         text: "Health-n-Wellness Registration Verification", // plain text body
-        // TODO: change href server once prod/dev is ready
-        html: "<h1>Welcome to the Health-n-Wellness App!</h1><b>Please click on the link to verify your account <a href=http://localhost:5000/verify/" + uniqueString + "> here </a></b>", // html body
+        html: "<h1>Welcome to the Health-n-Wellness App!</h1><b>Please click on the link to verify your account <a href=" + pathBuilder.buildPath(apiRoute) + "> here </a></b></b>", // html body
     });
 
     console.log("<emailer> Verification message sent to email: %s : uniqueString: %s", email, uniqueString);
