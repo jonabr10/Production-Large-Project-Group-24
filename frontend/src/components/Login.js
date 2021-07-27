@@ -25,6 +25,7 @@ export default class Login extends Component
         if (this.areFieldsValid())
         {
             let pathBuilder = require('../Path');
+            let tokenStorage = require('../tokenStorage');
             
             let loginPayload = 
             {
@@ -55,6 +56,7 @@ export default class Login extends Component
                         email: responseData.email
                     }
 
+                    tokenStorage.storeToken(responseData.jwtToken);
                     localStorage.setItem('user_data', JSON.stringify(userDataStore));
                     window.location.href = '/main-page';
                 }

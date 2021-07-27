@@ -24,11 +24,13 @@ class Search extends Component
     doSearch = () =>
     {
         let pathBuilder = require('../Path');
-        
+        let tokenStorage = require('../tokenStorage');
+
         let searchPayload = 
         {
             userId: this.props.userData.id,
-            search: this.state.search
+            search: this.state.search,
+            jwtToken: tokenStorage.retrieveToken()
         }
 
         let httpRequest = 
@@ -46,6 +48,7 @@ class Search extends Component
         {
             if (responseData.error.length === 0)
             {
+                tokenStorage.storeToken(responseData.jwtToken);
                 let results = responseData.results;
                 let dataSource = [];
                 
