@@ -610,24 +610,25 @@ app.post('/api/editItem', async (req, res, next) => {
         const itemId = itemretrieved._id;
         var alarmretrieved = await getAlarm(itemId);
 
-        var updatedItem = {
-            item : item, 
-            rx : rx, 
-            hy : hy,
-            workout: workout
-        }
+        var updatedItem = itemretrieved;
 
-        var updatedAlarm = {
-            time : time,
-            monday : monday,
-            tuesday : tuesday, 
-            wednesday : wednesday, 
-            thursday : thursday,
-            friday : friday, 
-            saturday : saturday,
-            sunday : sunday
-        }
+        updatedItem.item = item;
+        updatedItem.rx = rx;
+        updatedItem.hy = hy;
+        updatedItem.workout = workout;
 
+        var updatedAlarm = alarmretrieved;
+
+        updatedAlarm.time = time;
+        updatedAlarm.monday = monday;
+        updatedAlarm.tuesday = tuesday;
+        updatedAlarm.wednesday = wednesday;
+        updatedAlarm.thursday = thursday;
+        updatedAlarm.friday = friday;
+        updatedAlarm.saturday = saturday;
+        updatedAlarm.sunday = sunday;
+
+        
         
     
         var setitem = 
