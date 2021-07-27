@@ -950,76 +950,89 @@ app.post('/api/addItem', async (req, res, next) => {
 // Outgoing: UPDATED VALUES IN SAME FORMAT ABOVE
 app.post('/api/editItem', async (req, res, next) => {
 
-    const { userId, itemId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday, jwtToken } = req.body;
+    const { userId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday, jwtToken } = req.body;
     var error = '';
 
     // Initiate error string and attempt to retrieve both item and alarm
 
-    var itemretrieved = getItem(userId, item);
-    var alarmretrieved = getAlarm(itemId);
+    var itemretrieved = await getItem(userId, item);
+        
 
     // In the event both the item and alarm have been successfully retrieved...
 
-    if (itemretrieved != null && alarmretrieved != null) {
+    if (itemretrieved != null) {
 
         // Update item object's and alarm object's returned properties with new updated values from parameters
+        const itemId = itemretrieved._id;
+        var alarmretrieved = await getAlarm(itemId);
 
-        itemretrieved.item = item;
-        itemretrieved.rx = rx;
-        itemretrieved.hy = hy;
-        itemretrieved.workout = workout;
+        var updatedItem = {
+            item : item, 
+            rx : rx, 
+            hy : hy,
+            workout: workout
+        }
 
-        alarmretrieved.time = time;
-        alarmretrieved.monday = monday;
-        alarmretrieved.tuesday = tuesday;
-        alarmretrieved.wednesday = wednesday;
-        alarmretrieved.thursday = thursday;
-        alarmretrieved.friday = friday;
-        alarmretrieved.saturday = saturday;
-        alarmretrieved.sunday = sunday;
+        var updatedAlarm = {
+            time : time,
+            monday : monday,
+            tuesday : tuesday, 
+            wednesday : wednesday, 
+            thursday : thursday,
+            friday : friday, 
+            saturday : saturday,
+            sunday : sunday
+        }
+
+        
+    
+        var setitem = 
+        {
+            $set: updatedItem
+        }
+        var setalarm = {
+            $set: updatedAlarm
+        }
 
         // Attempt to connect to DB to push both item and alarm as an update.
 
         try {
 
             const db = client.db();
-            db.collection('items').updateOne(itemretrieved);
-            db.collection('alarms').updateOne(alarmretrieved);
+
+            db.collection('items').updateOne({userId: userId} , setitem);
+            db.collection('alarms').updateOne({itemId: itemId} , setalarm);
 
         } catch (e) {
 
             error = e.toString();
         }
 
-        // Refresh jwtToken
-
+        // refresh JWT
         var refreshedToken = null;
+
         try {
             refreshedToken = token.refresh(jwtToken);
         }
         catch (e) {
             console.log(e.message);
-        }
+
         // Append any error string in event of catch exception
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: error, jwtToken: refreshedToken };
-
-    }
-
-    // return values both missing if neither object found
-    else if (itemretrieved == null && alarmretrieved == null) {
-
-        // Refresh jwtToken
-        
-        var refreshedToken = null;
-        try {
-            refreshedToken = token.refresh(jwtToken);
-        }
-        catch (e) {
-            console.log(e.message);
-        }
-
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Both alarm and item returned null value', jwtToken: refreshedToken };
+        var ret = { item: item, 
+                rx: rx,
+                hy: hy, 
+                workout: workout,
+                time: time,
+                monday: monday,
+                tuesday: tuesday,
+                wednesday: wednesday,
+                thursday: thursday,
+                friday: friday,
+                saturday: saturday,
+                sunday: sunday,
+                error: error, 
+                jwtToken: refreshedToken };
 
     }
 
@@ -1027,40 +1040,63 @@ app.post('/api/editItem', async (req, res, next) => {
     // Return values updated with error string declaring item not found
     else if (itemretrieved == null) {
 
-        // Refresh jwtToken
-        
+        // refresh JWT
         var refreshedToken = null;
+
         try {
             refreshedToken = token.refresh(jwtToken);
         }
         catch (e) {
             console.log(e.message);
-        }
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Item returned null value', jwtToken: refreshedToken };
-
+        var ret = { item: item, 
+            rx: rx,
+            hy: hy, 
+            workout: workout,
+            time: time,
+            monday: monday,
+            tuesday: tuesday,
+            wednesday: wednesday,
+            thursday: thursday,
+            friday: friday,
+            saturday: saturday,
+            sunday: sunday,
+            error: "Item returned null",
+            jwtToken: refreshedToken };
     }
 
     // Return values updated with error string declaring alarm not found
 
     else if (alarmretrieved == null) {
 
-        // Refresh jwtToken
-        
+        // refresh JWT
         var refreshedToken = null;
+
         try {
             refreshedToken = token.refresh(jwtToken);
         }
         catch (e) {
             console.log(e.message);
-        }
 
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm returned null value', jwtToken: refreshedToken };
-
+        var ret = { item: item, 
+            rx: rx,
+            hy: hy, 
+            workout: workout,
+            time: time,
+            monday: monday,
+            tuesday: tuesday,
+            wednesday: wednesday,
+            thursday: thursday,
+            friday: friday,
+            saturday: saturday,
+            sunday: sunday,
+            error: "Alarm returned null",
+            jwtToken: refreshedToken };
     }
 
     res.status(200).json(ret);
 });
+
 
 // Incoming: userId, search
 // Outgoing: results[], error
