@@ -24,7 +24,6 @@ var token = require('./createJWT.js');
 
 // sending emails
 var emailer = require('./sendEmail.js');
-const { Http2ServerRequest } = require('http2');
 
 // Incoming: userName, email
 // Outgoing: user (singular)
@@ -895,118 +894,85 @@ app.post('/api/addItem', async (req, res, next) => {
 
     var error = '';
 
-    // check incoming for above elaboration
-    var itemfound = await getItem(userId, item);
-
-    // calling two auxilliary functions to check if item and alarm functions already exist, 
-    // saving result respective variable
-    if (!itemfound) {
-
-        const itemAdd = {
-            userId: userId,
-            workout: workout,
-            hy: hy,
-            rx: rx,
-            item: item,
-            waterAmount: waterAmount,
-            date: date
-        }
-
-        //Prepping an item package, try to see if item is added successfully into DB
-        //Error string from below try catch will be appended to return status
-        try {
-
-            const db = client.db();
-            db.collection('items').insertOne(itemAdd);
-
-        } catch (e) {
-            error = e.toString();
-        }
-
-        var newlyCreatedItem = await getItem(userId, item);
-
-        // Debug: delete me!
-        console.log("<newlyCreatedItem> status: " + newlyCreatedItem);
-
-        // prepping an alarm package, trying to see if alarm is added successfully into DB
-        // error string from below try catch will be appended to return status
-        const alarmAdd = {
-            userId: userId,
-            itemId: newlyCreatedItem._id.toString().trim(),
-            time: time,
-            monday: monday,
-            tuesday: tuesday,
-            wednesday: wednesday,
-            thursday: thursday,
-            friday: friday,
-            saturday: saturday,
-            sunday: sunday
-        }
-
-        try {
-            const db = client.db();
-            db.collection('alarms').insertOne(alarmAdd);
-        } catch (e) {
-            error = e.toString();
-        }
-
-        // refresh JWT
-        var refreshedToken = null;
-
-        try {
-            refreshedToken = token.refresh(jwtToken);
-        }
-        catch (e) {
-            console.log(e.message);
-        }
-
-        // packaging return value as outgoing elaborated above 
-        var ret = {
-            userId: userId,
-            workout: workout,
-            hy: hy,
-            rx: rx,
-            item: item,
-            waterAmount: waterAmount,
-            date: date,
-            itemId: newlyCreatedItem._id.toString().trim(),
-            time: time,
-            monday: monday,
-            tuesday: tuesday,
-            wednesday: wednesday,
-            thursday: thursday,
-            friday: friday,
-            saturday: saturday,
-            sunday: sunday,
-            error: '',
-            jwtToken: refreshedToken
-        };
+    const itemAdd = {
+        userId: userId,
+        workout: workout,
+        hy: hy,
+        rx: rx,
+        item: item,
+        waterAmount: waterAmount,
+        date: date
     }
 
-    // in the event getItem returns a value that isn't empty, we assume the item already exists by objectId, 
-    // and return the appropriate error string.
-    else if (itemfound) {
+    //Prepping an item package, try to see if item is added successfully into DB
+    //Error string from below try catch will be appended to return status
+    try {
 
-        var ret = {
-            userId: userId,
-            workout: workout,
-            hy: hy,
-            rx: rx,
-            item: item,
-            waterAmount: waterAmount,
-            date: date,
-            itemId: itemfound._id.toString(),
-            time: time,
-            monday: monday,
-            tuesday: tuesday,
-            wednesday: wednesday,
-            thursday: thursday,
-            friday: friday,
-            saturday: saturday,
-            sunday: sunday,
-            error: 'Item already exists'
-        };
+        const db = client.db();
+        var _itemObj = db.collection('items').insertOne(itemAdd);
+
+    } catch (e) {
+        error = e.toString();
     }
+
+    var newlyCreatedItem = await getItemUsingObjId((await _itemObj).insertedId);
+
+    // Debug: delete me!
+    console.log("<newlyCreatedItem> status: " + newlyCreatedItem);
+
+    // prepping an alarm package, trying to see if alarm is added successfully into DB
+    // error string from below try catch will be appended to return status
+    const alarmAdd = {
+        userId: userId,
+        itemId: newlyCreatedItem._id.toString().trim(),
+        time: time,
+        monday: monday,
+        tuesday: tuesday,
+        wednesday: wednesday,
+        thursday: thursday,
+        friday: friday,
+        saturday: saturday,
+        sunday: sunday
+    }
+
+    try {
+        const db = client.db();
+        db.collection('alarms').insertOne(alarmAdd);
+    } catch (e) {
+        error = e.toString();
+    }
+
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    // packaging return value as outgoing elaborated above 
+    var ret = {
+        userId: userId,
+        workout: workout,
+        hy: hy,
+        rx: rx,
+        item: item,
+        waterAmount: waterAmount,
+        date: date,
+        itemId: newlyCreatedItem._id.toString().trim(),
+        time: time,
+        monday: monday,
+        tuesday: tuesday,
+        wednesday: wednesday,
+        thursday: thursday,
+        friday: friday,
+        saturday: saturday,
+        sunday: sunday,
+        error: '',
+        jwtToken: refreshedToken
+    };
 
     // return 
     res.status(200).json(ret);
@@ -1016,13 +982,30 @@ app.post('/api/addItem', async (req, res, next) => {
 // Outgoing: UPDATED VALUES IN SAME FORMAT ABOVE
 app.post('/api/editItem', async (req, res, next) => {
 
-    const { userId, itemId, item, rx, hy, workout, waterAmount, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+    const {
+        userId,
+        itemId,
+        item,
+        rx,
+        hy,
+        workout,
+        waterAmount,
+        time, monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+        sunday
+    } = req.body;
+
     var error = '';
 
     // Initiate error string and attempt to retrieve both item and alarm
 
-    var itemretrieved = await getItemUsingObjId(userId, itemId);
-        
+    var itemretrieved = await getItemUsingObjId(itemId);
+
+    console.log(itemretrieved);
 
     // In the event both the item and alarm have been successfully retrieved...
 
@@ -1032,47 +1015,41 @@ app.post('/api/editItem', async (req, res, next) => {
 
         var alarmretrieved = await getAlarm(itemId);
 
-        var updatedItem = {
-
-            item: item,
-            rx : rx,
-            hy : hy, 
-            workout : workout,
-            waterAmount : waterAmount
-
-        }
-
-
-        var updatedAlarm = {
-
-            time : time, 
-            monday : monday,
-            tuesday : tuesday,
-            wednesday : wednesday,
-            thursday : thursday,
-            friday : friday, 
-            saturday : saturday,
-            sunday : sunday
-
-        }
-    
-    
-        var setitem = 
-        {
-            $set: updatedItem
-        }
-        var setalarm = {
-            $set: updatedAlarm
-        }
-
-        // Attempt to connect to DB to push both item and alarm as an update.
-
         try {
+            var ObjectId = require('mongodb').ObjectId;
+            var o_id = ObjectId(itemId);
 
             const db = client.db();
 
-            db.collection('items').updateOne({_id: itemId} , setitem);
-            db.collection('alarms').updateOne({itemId: itemId} , setalarm);
+            db.collection('items').updateOne(
+                { _id: o_id },
+                {
+                    $set: {
+                        "item": item,
+                        "rx": rx,
+                        "hy": hy,
+                        "workout": workout,
+                        "waterAmount": waterAmount
+                    }
+                }
+
+            );
+
+            db.collection('alarms').updateOne(
+                { itemId: itemId },
+                {
+                    $set: {
+                        "time": time,
+                        "monday": monday,
+                        "tuesday": tuesday,
+                        "wednesday": wednesday,
+                        "thursday": thursday,
+                        "friday": friday,
+                        "saturday": saturday,
+                        "sunday": sunday
+                    }
+                }
+            );
 
         } catch (e) {
 
@@ -1081,19 +1058,21 @@ app.post('/api/editItem', async (req, res, next) => {
 
         // Append any error string in event of catch exception
 
-        var ret = { item: item, 
-                rx: rx,
-                hy: hy, 
-                workout: workout,
-                time: time,
-                monday: monday,
-                tuesday: tuesday,
-                wednesday: wednesday,
-                thursday: thursday,
-                friday: friday,
-                saturday: saturday,
-                sunday: sunday,
-                error: error };
+        var ret = {
+            item: item,
+            rx: rx,
+            hy: hy,
+            workout: workout,
+            time: time,
+            monday: monday,
+            tuesday: tuesday,
+            wednesday: wednesday,
+            thursday: thursday,
+            friday: friday,
+            saturday: saturday,
+            sunday: sunday,
+            error: error
+        };
 
     }
 
@@ -1101,9 +1080,10 @@ app.post('/api/editItem', async (req, res, next) => {
     // Return values updated with error string declaring item not found
     else if (itemretrieved == null) {
 
-        var ret = { item: item, 
+        var ret = {
+            item: item,
             rx: rx,
-            hy: hy, 
+            hy: hy,
             workout: workout,
             time: time,
             monday: monday,
@@ -1113,16 +1093,18 @@ app.post('/api/editItem', async (req, res, next) => {
             friday: friday,
             saturday: saturday,
             sunday: sunday,
-            error: "Item returned null" };
+            error: "Item returned null"
+        };
     }
 
     // Return values updated with error string declaring alarm not found
 
     else if (alarmretrieved == null) {
 
-        var ret = { item: item, 
+        var ret = {
+            item: item,
             rx: rx,
-            hy: hy, 
+            hy: hy,
             workout: workout,
             time: time,
             monday: monday,
@@ -1132,12 +1114,12 @@ app.post('/api/editItem', async (req, res, next) => {
             friday: friday,
             saturday: saturday,
             sunday: sunday,
-            error: "Alarm returned null" };
+            error: "Alarm returned null"
+        };
     }
 
     res.status(200).json(ret);
 });
-
 
 // Incoming: userId, search
 // Outgoing: results[], error
