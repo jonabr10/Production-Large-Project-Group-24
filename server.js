@@ -1016,7 +1016,7 @@ app.post('/api/addItem', async (req, res, next) => {
 // Outgoing: UPDATED VALUES IN SAME FORMAT ABOVE
 app.post('/api/editItem', async (req, res, next) => {
 
-    const { userId, itemId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
+    const { userId, itemId, item, rx, hy, workout, waterAmount, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
     var error = '';
 
     // Initiate error string and attempt to retrieve both item and alarm
@@ -1037,7 +1037,8 @@ app.post('/api/editItem', async (req, res, next) => {
             item: item,
             rx : rx,
             hy : hy, 
-            workout : workout
+            workout : workout,
+            waterAmount : waterAmount
 
         }
 
