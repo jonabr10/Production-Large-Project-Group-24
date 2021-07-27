@@ -1016,7 +1016,7 @@ app.post('/api/editItem', async (req, res, next) => {
         }
         catch (e) {
             console.log(e.message);
-
+        }
         // Append any error string in event of catch exception
 
         var ret = { item: item, 
@@ -1048,6 +1048,7 @@ app.post('/api/editItem', async (req, res, next) => {
         }
         catch (e) {
             console.log(e.message);
+        }
 
         var ret = { item: item, 
             rx: rx,
@@ -1077,6 +1078,7 @@ app.post('/api/editItem', async (req, res, next) => {
         }
         catch (e) {
             console.log(e.message);
+        }
 
         var ret = { item: item, 
             rx: rx,
