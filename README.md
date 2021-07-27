@@ -3,6 +3,7 @@
 OPEN ME IN VSCODE OR ANY OTHER EDITOR TO SEE INSTRUCTIONS!
 
 <!---
+
 Steps on setting up environment
 
 Things you should already have
@@ -17,11 +18,11 @@ Things you should already have
 Connecting to the mongoDB database
 ==================================
 
-<go to> From the terminal/commandLine > navigate to project folder
+<go to> From the terminal/commandLine > navigate to project folder 
 
 <if> You do not have a .gitignore with the following content
     <terminal cmd> touch .gitignore
-        <contents>
+        <contents> 
         node_modules
         .env
         .DS_Store
@@ -34,7 +35,7 @@ Connecting to the mongoDB database
     <caution> running the command may throw some errors
         <what if> Error: Cannot find module 'express'
             <terminal cmd> npm install express
-
+        
         <what if> Error: Cannot find module 'dotenv'
             <terminal cmd> npm install dotenv
 
@@ -101,18 +102,34 @@ Starting Local Testing!
 
 <terminal two cmd> sudo npm start
 
-========================
-COMMANDS NEEDED FOR JWT
-========================
+===============================
+Email Verification Dependencies
+===============================
+
+Source: https://nodemailer.com/about/
+
+<terminal cmd> npm install nodemailer
+
+<go to> .env file
+    <add content>
+    EMAIL_USER="health.n.wellness.service@gmail.com"
+    EMAIL_PASSWORD="COP4331@24"
+
+<IMPORTANT> you MUST change the html link (line 19 sendEmail.js) based on the environment are currently working on!
+
+================
+JWT Dependencies
+================
 
 <terminal cmd> sudo npm install jsonwebtoken
 
-<terminal cmd> sudo npm install dotenv
+<terminal cmd> sudo npm install dotenv 
    (you may have done this previously. Also do this in the server directory and the Frontend directory)
 
-<go to> .env file and add: ACCESS_TOKEN_SECRET=secret
-
-<create file> createJWT.js
-
+<go to> .env file
+    <add content>
+    ACCESS_TOKEN_SECRET=secret
 
 --->
+
+
