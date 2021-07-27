@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './css/Search.css';
-import { Button, Tooltip, Table } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Button, Tooltip, Table, Space, Popconfirm, notification } from 'antd';
+import { SearchOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 class Search extends Component
 {
@@ -90,8 +90,61 @@ class Search extends Component
             }
             else
             {
+                this.showNotification('warning', responseData.error);
                 this.setState({ dataSource: null });
             }
+        });
+    }
+
+    doEdit = (itemId) =>
+    {
+        alert(itemId);
+    }
+
+    doDelete = (itemId) =>
+    {
+        let pathBuilder = require('../Path');
+        let tokenStorage = require('../tokenStorage');
+
+        let deletePayload = 
+        {
+            userId: this.props.userData.id,
+            itemObjId: itemId,
+            jwtToken: tokenStorage.retrieveToken()
+        }
+
+        let httpRequest = 
+        {
+            method: 'post',
+            body: JSON.stringify(deletePayload),
+            headers: {'Content-Type': 'application/json; charset=utf-8'}
+        }
+        
+        fetch(pathBuilder.buildPath('api/deleteItem'), httpRequest)
+        .then(this.checkResponse)
+        .catch(function(error) { console.log(error); })
+        .then(response => response.json())
+        .then(responseData =>
+        {
+            if (responseData.error.length === 0)
+            {
+                tokenStorage.storeToken(responseData.jwtToken);
+                this.showNotification('success', 'Successfully deleted item!');
+            }
+            else
+            {
+                this.showNotification('error', responseData.error);
+            }
+        });
+
+
+
+        
+        // delete locally
+        const dataSource = [...this.state.dataSource];
+        this.setState
+        ({
+            dataSource: dataSource.filter((item) => item.itemId !== itemId),
         });
     }
 
@@ -99,11 +152,35 @@ class Search extends Component
     {
         if (response.status >= 500)
         {
-            this.showErrorMessage('Error processing request', 'Did not get a valid response from server!');
+            this.showNotification('error', 'Server Error: Did not get a valid response from server!');
             throw new Error('Invalid JSON from server - probably a server error');
         }
 
         return response;
+    }
+
+    showNotification = (notificationType, message) =>
+    {
+        let config = 
+        {
+            message: message,
+            placement: 'bottomLeft'
+        }; 
+
+        if (notificationType === 'success')
+        {
+            notification.success(config);
+        }
+
+        if (notificationType === 'error')
+        {
+            notification.error(config);
+        }
+
+        if (notificationType === 'warning')
+        {
+            notification.warning(config);
+        }
     }
 
     render()
@@ -143,9 +220,19 @@ class Search extends Component
             {
                 title: "Action",
                 key: "action",
-                render: (row) => 
+                render: (_, record) => 
                 {
-                    return <span onClick={() => { alert(row.itemId);}}>Check ID</span >
+                    return (
+                        <div>
+                            <Space size="small">
+                                <Button type="primary" shape="square" size="small" icon={<EditOutlined />} onClick={() => { this.doEdit(record.itemId); }}> Edit </Button>
+                                
+                                <Popconfirm title="Are you sure you want to delete?" onConfirm={() => { this.doDelete(record.itemId); }}>
+                                    <Button type="ghost" shape="square" size="small" icon={<DeleteOutlined />}> Delete </Button>
+                                </Popconfirm >
+                            </Space>
+                        </div>
+                    )
                 }
             }
         ];

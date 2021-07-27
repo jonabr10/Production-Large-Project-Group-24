@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import './css/LoginAndSignup.css';
-import { Modal, Alert, notification } from 'antd';
+import { Alert, notification } from 'antd';
 
 export default class SignUp extends Component 
 {
@@ -59,7 +59,7 @@ export default class SignUp extends Component
                 }
                 else
                 {
-                    this.showNotification('error', 'Username or email already exists!');
+                    this.showNotification('error', responseData.error);
                 }
             });
         }
@@ -69,7 +69,7 @@ export default class SignUp extends Component
     {
         if (response.status >= 500)
         {
-            this.showErrorMessage('Error processing request', 'Did not get a valid response from server!');
+            this.showNotification('error', 'Server Error: Did not get a valid response from server!');
             throw new Error('Invalid JSON from server - probably a server error');
         }
 
@@ -138,15 +138,6 @@ export default class SignUp extends Component
     arePasswordsMatching = () => 
     {
         return this.state.password === this.state.confirmPassword;
-    }
-    
-    showErrorMessage = (title, message) =>
-    {
-        Modal.error
-        ({
-            title: title,
-            content: message,
-        });
     }
 
     showNotification = (notificationType, message) =>
