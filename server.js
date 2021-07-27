@@ -63,6 +63,26 @@ async function getItem(userId, itemName) {
     return itemResult;
 }
 
+// Incoming: userId, itemObjectId
+// Outgoing: item (singular)
+async function getItemUsingObjId(itemObjId) {
+
+    try {
+        // setup ObjectId format required for an _id (item object) search
+        var ObjectId = require('mongodb').ObjectId;
+        var o_id = ObjectId(itemObjId);
+
+        const db = client.db();
+        const itemResult = await db.collection('items').findOne(
+            { "_id": o_id }
+        )
+        return itemResult;
+    }
+    catch (e) {
+        return null;
+    }
+}
+
 // Incoming: _id (alarm object), 
 // Outgoing: an already existing alarm (singular) 
 async function getAlarm(itemId) {
@@ -191,7 +211,7 @@ app.post('/api/deleteItem', async (req, res, next) => {
     var error = '';
     var deleteCount = 0;
 
-    const { userId, item, jwtToken } = req.body;
+    const { userId, itemObjId, jwtToken } = req.body;
 
     // validate time remaining of JWT
     try {
@@ -210,7 +230,7 @@ app.post('/api/deleteItem', async (req, res, next) => {
     }
 
     // check if the item exists in the database
-    var itemToBeDeleted = await getItem(userId, item);
+    var itemToBeDeleted = await getItemUsingObjId(itemObjId);
 
     if (itemToBeDeleted) {
 
@@ -251,7 +271,7 @@ app.post('/api/deleteItem', async (req, res, next) => {
 
     var ret = {
         userId: userId,
-        item: item,
+        itemObjId: itemObjId,
         deleteCount: deleteCount,
         error: error,
         jwtToken: refreshedToken
