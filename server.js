@@ -24,6 +24,7 @@ var token = require('./createJWT.js');
 
 // sending emails
 var emailer = require('./sendEmail.js');
+const { Http2ServerRequest } = require('http2');
 
 // Incoming: userName, email
 // Outgoing: user (singular)
@@ -1028,29 +1029,32 @@ app.post('/api/editItem', async (req, res, next) => {
     if (itemretrieved != null) {
 
         // Update item object's and alarm object's returned properties with new updated values from parameters
-        
+
         var alarmretrieved = await getAlarm(itemId);
 
-        var updatedItem = itemretrieved;
+        var updatedItem = {
 
-        updatedItem.item = item;
-        updatedItem.rx = rx;
-        updatedItem.hy = hy;
-        updatedItem.workout = workout;
+            item: item,
+            rx : rx,
+            hy : hy, 
+            workout : workout
 
-        var updatedAlarm = alarmretrieved;
+        }
 
-        updatedAlarm.time = time;
-        updatedAlarm.monday = monday;
-        updatedAlarm.tuesday = tuesday;
-        updatedAlarm.wednesday = wednesday;
-        updatedAlarm.thursday = thursday;
-        updatedAlarm.friday = friday;
-        updatedAlarm.saturday = saturday;
-        updatedAlarm.sunday = sunday;
 
-        
-        
+        var updatedAlarm = {
+
+            time : time, 
+            monday : monday,
+            tuesday : tuesday,
+            wednesday : wednesday,
+            thursday : thursday,
+            friday : friday, 
+            saturday : saturday,
+            sunday : sunday
+
+        }
+    
     
         var setitem = 
         {
@@ -1066,7 +1070,7 @@ app.post('/api/editItem', async (req, res, next) => {
 
             const db = client.db();
 
-            db.collection('items').updateOne({userId: userId} , setitem);
+            db.collection('items').updateOne({_id: itemId} , setitem);
             db.collection('alarms').updateOne({itemId: itemId} , setalarm);
 
         } catch (e) {
