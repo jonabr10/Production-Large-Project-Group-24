@@ -129,22 +129,18 @@ class Search extends Component
             if (responseData.error.length === 0)
             {
                 tokenStorage.storeToken(responseData.jwtToken);
+                const dataSource = [...this.state.dataSource];
+                this.setState
+                ({
+                    dataSource: dataSource.filter((item) => item.itemId !== itemId),
+                });
+
                 this.showNotification('success', 'Successfully deleted item!');
             }
             else
             {
                 this.showNotification('error', responseData.error);
             }
-        });
-
-
-
-        
-        // delete locally
-        const dataSource = [...this.state.dataSource];
-        this.setState
-        ({
-            dataSource: dataSource.filter((item) => item.itemId !== itemId),
         });
     }
 
