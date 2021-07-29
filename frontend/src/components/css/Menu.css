@@ -69,3 +69,11 @@ table{
     border-radius: 15px;
     transition: all .3s;
 }
+
+.time-input {
+    height: 40px;
+}
+
+.days-input {
+    width: 280px;
+}

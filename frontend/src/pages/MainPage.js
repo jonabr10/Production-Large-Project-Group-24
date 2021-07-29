@@ -37,7 +37,7 @@ const MainPage = () =>
                                 <TabList>
                                     <Tab tabFor="vertical-tab-zero">Health Dashboard</Tab>
                                     <Tab tabFor="vertical-tab-one">Prescription</Tab>
-                                    <Tab tabFor="vertical-tab-two">Workouts</Tab>
+                                    <Tab tabFor="vertical-tab-two">Workout</Tab>
                                     <Tab tabFor="vertical-tab-four">Hydration</Tab>
                                     <Tab tabFor="vertical-tab-three">Weight Tracking</Tab>
                                     <br></br>
