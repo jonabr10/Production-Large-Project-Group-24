@@ -19,16 +19,27 @@ class Workouts extends Component
                     <Divider>Create alarms for workouts</Divider>
                 </div>
 
-                <div class="float-container">
-                    <div class="float-child">
+                <div class="float-left">
+                    <div class="inner">
                         <div>Float Column 1</div>
-                    </div>
-                    
-                    <div class="float-child">
-                        <div>Float Column 2</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
                     </div>
                 </div>
 
+                <div class="float-right">
+                    <div class="inner">
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                    </div>
+                </div>
             </div>
 		);
     }

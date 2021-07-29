@@ -16,18 +16,30 @@ class WeightTrack extends Component
                 <div>
                     <br></br>
                     <h3>Weight Tracking</h3>
+                    <Divider>Set your weight goals</Divider>
                 </div>
 
-                <div class="float-container">
-                    <div class="float-child">
+                <div class="float-left">
+                    <div class="inner">
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
                         <div>Float Column 1</div>
                     </div>
-                    
-                    <div class="float-child">
-                        <div>Float Column 2</div>
-                    </div>
                 </div>
 
+                <div class="float-right">
+                    <div class="inner">
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                        <div>Float Column 1</div>
+                    </div>
+                </div>
             </div>
         );
     }
