@@ -24,6 +24,7 @@ var token = require('./createJWT.js');
 
 // sending emails
 var emailer = require('./sendEmail.js');
+const e = require('express');
 
 // Incoming: userName, email
 // Outgoing: user (singular)
@@ -363,8 +364,79 @@ app.get('/verify/:uniqueString', async (req, res) => {
     )
 
     if (user) {
+        // user already validated the account
         if (user.hasValidated == true) {
             error = 'User has already validated';
+
+            var ret = {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                userName: user.userName,
+                email: user.email,
+                error: error,
+                hasValidated: user.hasValidated,
+                uniqueString: user.uniqueString
+            };
+        }
+
+        // user has not validated the account
+        else {
+            try {
+                // update hasValidated value from false to true
+                const db = client.db();
+                db.collection('users').updateOne(
+                    { "uniqueString": uniqueString },
+                    { $set: { "hasValidated": true } }
+                );
+            } catch (e) {
+                error = e.toString();
+            }
+
+            var ret = {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                userName: user.userName,
+                email: user.email,
+                error: error,
+                hasValidated: true,
+                uniqueString: user.uniqueString
+            };
+
+            // TODO: change this to the login page once finished!
+            return res.redirect('http://google.com/');
+        }
+    }
+
+    else {
+        error = 'User was not found';
+
+        var ret = {
+            firstName: "",
+            lastName: "",
+            userName: "",
+            email: "",
+            error: error,
+            hasValidated: null,
+            uniqueString: uniqueString
+        };
+    }
+
+    res.status(200).json(ret);
+});
+
+app.get('/reset/:uniqueString', async (req, res) => {
+
+    const { uniqueString } = req.params;
+    var error = '';
+
+    const db = client.db();
+    const user = await db.collection('users').findOne(
+        { "uniqueString": uniqueString }
+    )
+
+    if (user) {
+        if (user.hasValidated == true) {
+            error = 'This user did not request password reset, please proceed to login';
 
             var ret = {
                 firstName: user.firstName,
@@ -399,7 +471,7 @@ app.get('/verify/:uniqueString', async (req, res) => {
             };
 
             // TODO: change this to the login page once finished!
-            return res.redirect('http://google.com')
+            return res.redirect('http://google.com/' + uniqueString);
         }
     }
 
@@ -420,76 +492,103 @@ app.get('/verify/:uniqueString', async (req, res) => {
     res.status(200).json(ret);
 });
 
-app.get('/reset/:uniqueString', async (req, res) => {
-
-    const { uniqueString } = req.params;
+// Incoming: email
+// Outgoing: email, error
+// Purpose: when the user clicks on reset password button and provides an email, the
+//          API will confirm the existence of the account and send the reset request
+//          via email
+app.post('/api/passwordResetOutgoing', async (req, res, next) => {
+    const { email } = req.body;
     var error = '';
 
     const db = client.db();
     const user = await db.collection('users').findOne(
-        { "uniqueString": uniqueString }
+        { "email": email }
     )
 
     if (user) {
-        if (user.hasValidated == true) {
-            error = 'User did not request password reset, please proceed to login';
+        emailer.sendResetRequest(email, user.uniqueString);
 
-            var ret = {
-                firstName: user.firstName,
-                lastName: user.lastName,
-                userName: user.userName,
-                email: user.email,
-                error: error,
-                hasValidated: user.hasValidated,
-                uniqueString: user.uniqueString
-            };
-        }
-
-        else {
-            try {
-                const db = client.db();
-                db.collection('users').updateOne(
-                    { "uniqueString": uniqueString },
-                    { $set: { "hasValidated": true } }
-                );
-            } catch (e) {
-                error = e.toString();
-            }
-
-            var ret = {
-                firstName: user.firstName,
-                lastName: user.lastName,
-                userName: user.userName,
-                email: user.email,
-                error: error,
-                hasValidated: true,
-                uniqueString: user.uniqueString
-            };
-
-            // TODO: change this to the password reset page once finished!
-            return res.redirect('http://google.com')
-        }
+        var ret = {
+            email: email,
+            error: error
+        };
     }
 
     else {
-        error = 'User was not found';
+        error = 'No records found';
 
         var ret = {
-            firstName: "",
-            lastName: "",
-            userName: "",
-            email: "",
-            error: error,
-            hasValidated: null,
-            uniqueString: uniqueString
+            email: email,
+            error: error
         };
     }
 
     res.status(200).json(ret);
 });
 
-app.post('/api/passwordResetOutgoing', async (req, res, next) => {
+// incoming: apiRoute (uniqueString), userName, password, retypePassword
+// Outgoing: userName, password, retypePassword, error
+// Purpose: confirms the user's uniqueString and userName prior to changing the user's password
+// app.post('/api/passwordResetincoming', async (req, res, next) => {
+app.post('/api/passwordResetIncoming/:uniqueString', async (req, res, next) => {
+    const { uniqueString } = req.params;
+    const { userName, password, retypePassword } = req.body;
+    var error = '';
 
+    // find the user using uniqueString and userName
+    const db = client.db();
+    const user = await db.collection('users').findOne(
+        {
+            $and: [
+                { "uniqueString": uniqueString },
+                { "userName": userName }
+            ]
+        }
+    )
+
+    if (user) {
+        // validating if the password and retypePassword are the same
+        if (password === retypePassword) {
+            db.collection('users').updateOne(
+                { userName: userName },
+                { $set: { "password": password } }
+            );
+
+            var ret = {
+                userName: userName,
+                password: password,
+                retypePassword: retypePassword,
+                uniqueString: uniqueString,
+                error: error
+            }
+        }
+
+        else {
+            error = 'password and retypePassword does not match';
+
+            var ret = {
+                userName: userName,
+                password: password,
+                retypePassword: retypePassword,
+                uniqueString: uniqueString,
+                error: error
+            }
+        }
+
+    } else {
+        error = 'User does not exist';
+
+        var ret = {
+            userName: userName,
+            password: password,
+            retypePassword: retypePassword,
+            uniqueString: uniqueString,
+            error: error
+        }
+    }
+
+    res.status(200).json(ret);
 });
 
 // Incoming: new user's firstName, lastName, userName, password, email
@@ -501,12 +600,14 @@ app.post('/api/register', async (req, res, next) => {
     var error = '';
 
     // Check to see if the new user already exists in the database
-    var isTheNewUserDuplicate = await getUser(userName, password);
+    var isTheNewUserDuplicate = await getUser(userName, email);
 
     if (!isTheNewUserDuplicate) {
 
         // generate the randomized string for the url account confirmation link
         const _uniqueString = await randomizeString();
+
+        // send the email to user for account verification with the uniqueString identifier
         emailer.sendVerification(email, _uniqueString);
 
         const registerNewUser = {
@@ -582,8 +683,9 @@ app.post('/api/login', async (req, res, next) => {
     var error = '';
 
     const db = client.db();
-    const results = await
-        db.collection('users').find({ userName: login, password: password }).toArray();
+    const results = await db.collection('users').find(
+        { userName: login, password: password }
+    ).toArray();
 
     var id = -1;
     var fn = '';
@@ -594,8 +696,7 @@ app.post('/api/login', async (req, res, next) => {
         id = results[0].userId;
         fn = results[0].firstName;
         ln = results[0].lastName;
-        email = results[0].email
-
+        email = results[0].email;
 
         try {
             const token = require("./createJWT.js");
@@ -791,7 +892,7 @@ async function calculatePercentageOfWeightChange(arrayOfWeight) {
     }
 }
 
-// Incomming: userId
+// incoming: userId
 // Outgoing: userId, desiredWeight (most recent add), currentWeightDifferenceFromGoal (abs value), 
 //           percentageFromWeightGoal, arrayOfWeight[] 
 app.post('/api/outputWeight', async (req, res, next) => {
@@ -871,9 +972,25 @@ app.post('/api/outputWeight', async (req, res, next) => {
 //           monday - sunday boolean values, error string
 app.post('/api/addItem', async (req, res, next) => {
 
-    const { userId, workout, hy, rx, item, waterAmount, date,
-        time, monday, tuesday, wednesday, thursday, friday, saturday, sunday, jwtToken } = req.body;
+    const {
+        userId,
+        workout,
+        hy,
+        rx,
+        item,
+        waterAmount,
+        time,
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+        sunday,
+        jwtToken
+    } = req.body;
 
+    var error = '';
 
     // validate time remaining of JWT 
     try {
@@ -891,60 +1008,164 @@ app.post('/api/addItem', async (req, res, next) => {
         console.log(e.message);
     }
 
+    const itemAdd = {
+        userId: userId,
+        workout: workout,
+        hy: hy,
+        rx: rx,
+        item: item,
+        waterAmount: waterAmount
+    }
+
+    //Prepping an item package, try to see if item is added successfully into DB
+    //Error string from below try catch will be appended to return status
+    try {
+        const db = client.db();
+        var _itemObj = db.collection('items').insertOne(itemAdd);
+
+    } catch (e) {
+        error = e.toString();
+    }
+
+    var newlyCreatedItem = await getItemUsingObjId((await _itemObj).insertedId);
+
+    // prepping an alarm package, trying to see if alarm is added successfully into DB
+    // error string from below try catch will be appended to return status
+    const alarmAdd = {
+        userId: userId,
+        itemId: newlyCreatedItem._id.toString().trim(),
+        time: time,
+        monday: monday,
+        tuesday: tuesday,
+        wednesday: wednesday,
+        thursday: thursday,
+        friday: friday,
+        saturday: saturday,
+        sunday: sunday
+    }
+
+    try {
+        const db = client.db();
+        db.collection('alarms').insertOne(alarmAdd);
+    } catch (e) {
+        error = e.toString();
+    }
+
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    // packaging return value as outgoing elaborated above 
+    var ret = {
+        userId: userId,
+        workout: workout,
+        hy: hy,
+        rx: rx,
+        item: item,
+        waterAmount: waterAmount,
+        itemId: newlyCreatedItem._id.toString().trim(),
+        time: time,
+        monday: monday,
+        tuesday: tuesday,
+        wednesday: wednesday,
+        thursday: thursday,
+        friday: friday,
+        saturday: saturday,
+        sunday: sunday,
+        error: error,
+        jwtToken: refreshedToken
+    };
+
+    // return 
+    res.status(200).json(ret);
+});
+
+// Incoming: item id, item name, rx, hy, workout, time ,monday - sunday boolean vals
+// Outgoing: UPDATED VALUES IN SAME FORMAT ABOVE
+app.post('/api/editItem', async (req, res, next) => {
+
+    const {
+        userId,
+        itemId,
+        item,
+        rx,
+        hy,
+        workout,
+        waterAmount,
+        time,
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+        sunday,
+        jwtToken
+    } = req.body;
 
     var error = '';
 
-    // check incoming for above elaboration
-    var itemfound = await getItem(userId, item);
+    // validate time remaining of JWT 
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
 
-    // calling two auxilliary functions to check if item and alarm functions already exist, 
-    // saving result respective variable
-    if (!itemfound) {
-
-        const itemAdd = {
-            userId: userId,
-            workout: workout,
-            hy: hy,
-            rx: rx,
-            item: item,
-            waterAmount: waterAmount,
-            date: date
+            res.status(200).json(r);
+            return;
         }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 
-        //Prepping an item package, try to see if item is added successfully into DB
-        //Error string from below try catch will be appended to return status
-        try {
+    var itemretrieved = await getItemUsingObjId(itemId);
 
-            const db = client.db();
-            db.collection('items').insertOne(itemAdd);
-
-        } catch (e) {
-            error = e.toString();
-        }
-
-        var newlyCreatedItem = await getItem(userId, item);
-
-        // Debug: delete me!
-        console.log("<newlyCreatedItem> status: " + newlyCreatedItem);
-
-        // prepping an alarm package, trying to see if alarm is added successfully into DB
-        // error string from below try catch will be appended to return status
-        const alarmAdd = {
-            userId: userId,
-            itemId: newlyCreatedItem._id.toString().trim(),
-            time: time,
-            monday: monday,
-            tuesday: tuesday,
-            wednesday: wednesday,
-            thursday: thursday,
-            friday: friday,
-            saturday: saturday,
-            sunday: sunday
-        }
+    if (itemretrieved != null) {
 
         try {
+            var ObjectId = require('mongodb').ObjectId;
+            var o_id = ObjectId(itemId);
+
             const db = client.db();
-            db.collection('alarms').insertOne(alarmAdd);
+
+            db.collection('items').updateOne(
+                { _id: o_id },
+                {
+                    $set: {
+                        "item": item,
+                        "rx": rx,
+                        "hy": hy,
+                        "workout": workout,
+                        "waterAmount": waterAmount
+                    }
+                }
+            );
+
+            db.collection('alarms').updateOne(
+                { itemId: itemId },
+                {
+                    $set: {
+                        "time": time,
+                        "monday": monday,
+                        "tuesday": tuesday,
+                        "wednesday": wednesday,
+                        "thursday": thursday,
+                        "friday": friday,
+                        "saturday": saturday,
+                        "sunday": sunday
+                    }
+                }
+            );
+
         } catch (e) {
             error = e.toString();
         }
@@ -959,16 +1180,11 @@ app.post('/api/addItem', async (req, res, next) => {
             console.log(e.message);
         }
 
-        // packaging return value as outgoing elaborated above 
         var ret = {
-            userId: userId,
-            workout: workout,
-            hy: hy,
-            rx: rx,
             item: item,
-            waterAmount: waterAmount,
-            date: date,
-            itemId: newlyCreatedItem._id.toString().trim(),
+            rx: rx,
+            hy: hy,
+            workout: workout,
             time: time,
             monday: monday,
             tuesday: tuesday,
@@ -977,24 +1193,19 @@ app.post('/api/addItem', async (req, res, next) => {
             friday: friday,
             saturday: saturday,
             sunday: sunday,
-            error: '',
+            error: error,
             jwtToken: refreshedToken
         };
     }
 
-    // in the event getItem returns a value that isn't empty, we assume the item already exists by objectId, 
-    // and return the appropriate error string.
-    else if (itemfound) {
+    // Return values updated with error string declaring item not found
+    else if (itemretrieved == null) {
 
         var ret = {
-            userId: userId,
-            workout: workout,
-            hy: hy,
-            rx: rx,
             item: item,
-            waterAmount: waterAmount,
-            date: date,
-            itemId: itemfound._id.toString(),
+            rx: rx,
+            hy: hy,
+            workout: workout,
             time: time,
             monday: monday,
             tuesday: tuesday,
@@ -1003,91 +1214,12 @@ app.post('/api/addItem', async (req, res, next) => {
             friday: friday,
             saturday: saturday,
             sunday: sunday,
-            error: 'Item already exists'
+            error: "Item returned null"
         };
     }
 
-    // return 
     res.status(200).json(ret);
 });
-
-// Incoming: item id, item name, rx, hy, workout, time ,monday - sunday boolean vals
-// Outgoing: UPDATED VALUES IN SAME FORMAT ABOVE
-app.post('/api/editItem', async (req, res, next) => {
-
-    const { userId, itemId, item, rx, hy, workout, time, monday, tuesday, wednesday, thursday, friday, saturday, sunday } = req.body;
-    var error = '';
-
-    // Initiate error string and attempt to retrieve both item and alarm
-
-    var itemretrieved = getItem(userId, item);
-    var alarmretrieved = getAlarm(itemId);
-
-    // In the event both the item and alarm have been successfully retrieved...
-
-    if (itemretrieved != null && alarmretrieved != null) {
-
-        // Update item object's and alarm object's returned properties with new updated values from parameters
-
-        itemretrieved.item = item;
-        itemretrieved.rx = rx;
-        itemretrieved.hy = hy;
-        itemretrieved.workout = workout;
-
-        alarmretrieved.time = time;
-        alarmretrieved.monday = monday;
-        alarmretrieved.tuesday = tuesday;
-        alarmretrieved.wednesday = wednesday;
-        alarmretrieved.thursday = thursday;
-        alarmretrieved.friday = friday;
-        alarmretrieved.saturday = saturday;
-        alarmretrieved.sunday = sunday;
-
-        // Attempt to connect to DB to push both item and alarm as an update.
-
-        try {
-
-            const db = client.db();
-            db.collection('items').updateOne(itemretrieved);
-            db.collection('alarms').updateOne(alarmretrieved);
-
-        } catch (e) {
-
-            error = e.toString();
-        }
-
-        // Append any error string in event of catch exception
-
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: error };
-
-    }
-
-    // return values both missing if neither object found
-    else if (itemretrieved == null && alarmretrieved == null) {
-
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Both alarm and item returned null value' };
-
-    }
-
-
-    // Return values updated with error string declaring item not found
-    else if (itemretrieved == null) {
-
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Item returned null value' };
-
-    }
-
-    // Return values updated with error string declaring alarm not found
-
-    else if (alarmretrieved == null) {
-
-        var ret = { item: item, rx: rx, hy: hy, workout: workout, time: time, monday: monday, tuesday: tuesday, wednesday: wednesday, thursday: thursday, friday: friday, saturday: saturday, sunday: sunday, error: 'Alarm returned null value' };
-
-    }
-
-    res.status(200).json(ret);
-});
-
 
 // Incoming: userId, search
 // Outgoing: results[], error
