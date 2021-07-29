@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOM from "react-dom";
 import './css/Menu.css';
 import { Divider, Button, TimePicker, Statistic, Select, Alert } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
@@ -38,7 +39,11 @@ class Workouts extends Component
 
     doCreate = () =>
     {
-        alert("days: " + this.state.days);
+        if (this.areFieldsValid())
+        {
+            let timeStamp = this.state.timeObj.time;
+            alert("days: " + this.state.days);
+        }
     }
 
     /*
@@ -60,6 +65,32 @@ class Workouts extends Component
         "jwtToken": "isfi83ri8dldlfsi9"
     }
     */  
+
+    areFieldsValid = () => 
+    {
+        let validFlag = true;
+        
+        if (!this.areAllFieldsFilled())
+        {
+            const element = <Alert message= "Please fill out all information." banner />;
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlertW'));
+
+            validFlag = false;
+        }
+        else
+        {
+            const element = '';
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlertW'));
+        }
+        
+        return validFlag;
+    }
+
+    areAllFieldsFilled = () => 
+    {
+        return this.state.alarmName.length > 0 && this.state.timeObj.timeString.length > 0 && 
+            this.state.days.length > 0;
+    }
 
     render() 
     {
@@ -96,14 +127,14 @@ class Workouts extends Component
 
                         <div className="form-group">
                             <label>Days</label>
-                            <Select mode="tags" id="days" name="days" className="days-input" placeholder="Select days for alarm to trigger" onChange={this.handleDayInputChange}>
+                            <Select mode="multiple" id="days" name="days" className="days-input" placeholder="Select days for alarm to trigger" onChange={this.handleDayInputChange}>
                                 {daysOfWeek}
                             </Select>
                         </div>
 
                         <br></br>
-                        <Button type="deafult" shape="square" size="small" icon={<ClockCircleOutlined />} onClick={() => { this.doCreate(); }}> Create Alarm </Button>
-                        <div id="invalidFieldsAlert"></div>
+                        <Button type="default" shape="square" size="small" icon={<ClockCircleOutlined />} onClick={() => { this.doCreate(); }}> Create Alarm </Button>
+                        <div id="invalidFieldsAlertW"></div>
                     </div>
                 </div>
 

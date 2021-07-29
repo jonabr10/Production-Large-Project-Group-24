@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOM from "react-dom";
 import './css/Menu.css';
 import { Divider, Button, TimePicker, Statistic, Select, Alert } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
@@ -38,7 +39,11 @@ class Hydration extends Component
 
     doCreate = () =>
     {
-        alert("days: " + this.state.days);
+        if (this.areFieldsValid())
+        {
+            let timeStamp = this.state.timeObj.time;
+            alert("days: " + this.state.days);
+        }
     }
 
     /*
@@ -60,6 +65,32 @@ class Hydration extends Component
         "jwtToken": "isfi83ri8dldlfsi9"
     }
     */
+
+    areFieldsValid = () => 
+    {
+        let validFlag = true;
+
+        if (!this.areAllFieldsFilled())
+        {
+            const element = <Alert message= "Please fill out all information." banner />;
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlertHy'));
+
+            validFlag = false;
+        }
+        else
+        {
+            const element = '';
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlertHy'));
+        }
+        
+        return validFlag;
+    }
+
+    areAllFieldsFilled = () => 
+    {
+        return this.state.alarmName.length > 0 && this.state.timeObj.timeString.length > 0 && 
+            this.state.days.length > 0;
+    }
 
     render()
     {
@@ -96,14 +127,14 @@ class Hydration extends Component
 
                         <div className="form-group">
                             <label>Days</label>
-                            <Select mode="tags" id="days" name="days" className="days-input" placeholder="Select days for alarm to trigger" onChange={this.handleDayInputChange}>
+                            <Select mode="multiple" id="days" name="days" className="days-input" placeholder="Select days for alarm to trigger" onChange={this.handleDayInputChange}>
                                 {daysOfWeek}
                             </Select>
                         </div>
 
                         <br></br>
-                        <Button type="deafult" shape="square" size="small" icon={<ClockCircleOutlined />} onClick={() => { this.doCreate(); }}> Create Alarm </Button>
-                        <div id="invalidFieldsAlert"></div>
+                        <Button type="default" shape="square" size="small" icon={<ClockCircleOutlined />} onClick={() => { this.doCreate(); }}> Create Alarm </Button>
+                        <div id="invalidFieldsAlertHy"></div>
                     </div>
                 </div>
 
@@ -114,7 +145,7 @@ class Hydration extends Component
                         </div>
 
                         <img src={image} height="47%" width="47%"/>
-                        
+
                         <div>
                             Want to manage your alarms? Check out the <a href="/main-page">Health Dashboard!</a>
                         </div>
