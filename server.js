@@ -1105,10 +1105,27 @@ app.post('/api/editItem', async (req, res, next) => {
         thursday,
         friday,
         saturday,
-        sunday
+        sunday,
+        jwtToken
     } = req.body;
 
     var error = '';
+
+    // validate time remaining of JWT 
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 
     var itemretrieved = await getItemUsingObjId(itemId);
 
@@ -1153,6 +1170,16 @@ app.post('/api/editItem', async (req, res, next) => {
             error = e.toString();
         }
 
+        // refresh JWT
+        var refreshedToken = null;
+
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
         var ret = {
             item: item,
             rx: rx,
@@ -1166,7 +1193,8 @@ app.post('/api/editItem', async (req, res, next) => {
             friday: friday,
             saturday: saturday,
             sunday: sunday,
-            error: error
+            error: error,
+            jwtToken: refreshedToken
         };
     }
 
