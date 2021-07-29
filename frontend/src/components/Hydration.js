@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './css/Menu.css';
+import { Divider } from 'antd';
 
 class Hydration extends Component
 {
@@ -11,28 +12,24 @@ class Hydration extends Component
     render()
     {
         return (
-            <div class="grid-container">
-                <div class="grid-child current">
-                    <h3>Hydration Log</h3>
+            <div class="grid-container">   
+                <div>
+                    <br></br>
+                    <h3>Hydration</h3>
+                    <Divider>Create alarms for water intake</Divider>
                 </div>
 
-                <div class="grid-child new">
-                    <h3>Hydration Check</h3>
-                    <form>
-                        <inputs>Water Drank in Ounces</inputs>
-                        <br></br>
-                        <input type='number' name='weight'/>
-                        <br></br>
-                        <br></br>
-                        <inputs>Date</inputs>
-                        <br></br>
-                        <input type='date' name='date'/>
-                        <br></br>
-                        <br></br>
-                        <input type='submit'/>
-                    </form>
+                <div class="float-container">
+                    <div class="float-child">
+                        <div>Float Column 1</div>
+                    </div>
+                    
+                    <div class="float-child">
+                        <div>Float Column 2</div>
+                    </div>
                 </div>
-            </div>  
+
+            </div>
         );
     }
 }

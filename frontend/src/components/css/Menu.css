@@ -1,9 +1,16 @@
 .grid-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 30px;
     height: 450px;
 }
+
+.float-container {
+    padding: 20px;
+}
+
+.float-child {
+    width: 50%;
+    float: left;
+    padding: 20px;
+}  
 
 .grid-child{
     overflow-x: hidden;

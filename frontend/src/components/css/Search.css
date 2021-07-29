@@ -2,11 +2,6 @@
     height: 450px;
 }
 
-.search-child{
-    overflow-x: auto;
-    height: 50%;
-}
-
 .sresult{
     overflow-x: auto;
     text-align: center;
@@ -15,14 +10,8 @@
 }
 
 .search-button {
-    height: 32%;
+    height: 30px;
     right: -1px;
-}
-
-.bar{
-    overflow-x: auto;
-    text-align: center;
-    height: 20%;
 }
 
 .inputs{

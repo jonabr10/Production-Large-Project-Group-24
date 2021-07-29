@@ -187,6 +187,7 @@ class Search extends Component
                 title: 'Category',
                 dataIndex: 'category',
                 key: 'category',
+                width: 150,
                 filters: [
                     {
                         text: 'Prescription',
@@ -212,10 +213,12 @@ class Search extends Component
                 title: 'Alarm Status',
                 dataIndex: 'alarm',
                 key: 'alarm',
+                width: 325
             },
             {
                 title: "Action",
                 key: "action",
+                width: 180,
                 render: (_, record) => 
                 {
                     return (
@@ -236,6 +239,7 @@ class Search extends Component
         return (
             <div class="search-container">
                 <div class="search-child bar">
+                    <br></br>
                     <h3>Health Dashboard</h3>
                     <input type="text" class="searchbar" name="search" placeholder="Input item names to search" onChange={this.handleInputChange}/>
                     
@@ -245,7 +249,8 @@ class Search extends Component
                 </div>
                 
                 <div>
-                    <Table dataSource={this.state.dataSource} columns={columns} pagination={{ pageSize: 4, size: 'small'}}/>
+                    <br></br>
+                    <Table dataSource={this.state.dataSource} columns={columns} scroll={{ y: 300 }} pagination={ false }/>
                 </div>
             </div>  
         );
