@@ -2,7 +2,6 @@ import React from 'react';
 import PageTitle from '../components/PageTitle'; 
 import Account from '../components/Account';
 import Logout from '../components/Logout';
-import Alarms from '../components/Alarms';
 import Prescription from '../components/Prescription';
 import Hydration from '../components/Hydration';
 import WeightTrack from '../components/WeightTrack';
@@ -34,14 +33,13 @@ const MainPage = () =>
                             <div class="leftpan">  
                                 <Account userData={userData}/>
                             </div>
-                            <Tabs defaultTab="vertical-tab-one" vertical class="vertical-tabs">
+                            <Tabs defaultTab="vertical-tab-zero" vertical class="vertical-tabs">
                                 <TabList>
                                     <Tab tabFor="vertical-tab-zero">Health Dashboard</Tab>
                                     <Tab tabFor="vertical-tab-one">Prescription</Tab>
                                     <Tab tabFor="vertical-tab-two">Workouts</Tab>
-                                    <Tab tabFor="vertical-tab-three">Weight Tracking</Tab>
                                     <Tab tabFor="vertical-tab-four">Hydration</Tab>
-                                    <Tab tabFor="vertical-tab-five">Alarms</Tab>
+                                    <Tab tabFor="vertical-tab-three">Weight Tracking</Tab>
                                     <br></br>
                                     <Logout /> 
                                 </TabList>
@@ -61,9 +59,6 @@ const MainPage = () =>
                                     </TabPanel> 
                                     <TabPanel tabId="vertical-tab-four" class="middle">
                                         <Hydration userData={userData}/>
-                                    </TabPanel>
-                                    <TabPanel tabId="vertical-tab-five" class="middle">
-                                        <Alarms />
                                     </TabPanel>
                                 </div> 
                             </Tabs>
