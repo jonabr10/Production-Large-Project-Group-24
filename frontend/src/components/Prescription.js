@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import './css/Menu.css';
-import { Divider, Button, TimePicker, Statistic, Select, Alert } from 'antd';
+import { Divider, Button, TimePicker, Statistic, Select } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
+import image from './img/rx.png';
 
 class Prescription extends Component
 {
@@ -37,7 +38,8 @@ class Prescription extends Component
 
     doCreate = () =>
     {
-        alert("days: " + this.state.days);
+        let timeStamp = this.state.timeObj.time;
+        alert(timeStamp);
     }
 
     /*
@@ -112,10 +114,10 @@ class Prescription extends Component
                             <Statistic title="Prescription alarms you have set" value={112893} />
                         </div>
 
-                        <br></br>
+                        <img src={image} height="47%" width="47%"/>
 
                         <div>
-                            Insert pill image here
+                            Want to manage your alarms? Check out the <a href="/main-page">Health Dashboard!</a>
                         </div>
                     </div>
                 </div>

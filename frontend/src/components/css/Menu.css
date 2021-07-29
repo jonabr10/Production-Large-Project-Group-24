@@ -9,13 +9,13 @@
 .float-left {
     width: 50%;
     float: left;
-    padding: 20px;
+    padding: 10px;
 }  
 
 .float-right {
     width: 50%;
     float: right;
-    padding: 20px;
+    padding: 10px;
 }  
 
 .grid-child{

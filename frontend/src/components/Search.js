@@ -241,7 +241,7 @@ class Search extends Component
                 <div class="search-child bar">
                     <br></br>
                     <h3>Health Dashboard</h3>
-                    <input type="text" class="searchbar" name="search" placeholder="Input item names to search" onChange={this.handleInputChange}/>
+                    <input type="text" class="searchbar" name="search" placeholder="Search for alarms by their name" onChange={this.handleInputChange}/>
                     
                     <Tooltip title="Search">
                         <Button type="primary" shape="square" icon={<SearchOutlined />} className="search-button" onClick={() => this.doSearch()} />

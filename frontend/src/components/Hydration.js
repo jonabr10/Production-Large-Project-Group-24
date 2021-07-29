@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './css/Menu.css';
 import { Divider, Button, TimePicker, Statistic, Select, Alert } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
+import image from './img/water.png';
 
 class Hydration extends Component
 {
@@ -112,10 +113,10 @@ class Hydration extends Component
                             <Statistic title="Hydration alarms you have set" value={112893} />
                         </div>
 
-                        <br></br>
-
+                        <img src={image} height="47%" width="47%"/>
+                        
                         <div>
-                            Insert water image here
+                            Want to manage your alarms? Check out the <a href="/main-page">Health Dashboard!</a>
                         </div>
                     </div>
                 </div>
