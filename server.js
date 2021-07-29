@@ -403,7 +403,7 @@ app.get('/verify/:uniqueString', async (req, res) => {
             };
 
             // TODO: change this to the login page once finished!
-            return res.redirect('http://google.com/')
+            return res.redirect('http://google.com/');
         }
     }
 
@@ -469,6 +469,9 @@ app.get('/reset/:uniqueString', async (req, res) => {
                 hasValidated: true,
                 uniqueString: user.uniqueString
             };
+
+            // TODO: change this to the login page once finished!
+            return res.redirect('http://google.com/' + uniqueString);
         }
     }
 
@@ -489,10 +492,46 @@ app.get('/reset/:uniqueString', async (req, res) => {
     res.status(200).json(ret);
 });
 
+// Incoming: email
+// Outgoing: email, error
+// Purpose: when the user clicks on reset password button and provides an email, the
+//          API will confirm the existence of the account and send the reset request
+//          via email
+app.post('/api/passwordResetOutgoing', async (req, res, next) => {
+    const { email } = req.body;
+    var error = '';
 
+    const db = client.db();
+    const user = await db.collection('users').findOne(
+        { "email": email }
+    )
 
-// app.post('/api/passwordResetIncomming', async (req, res, next) => {
-app.post('/api/passwordResetIncomming/:uniqueString', async (req, res, next) => {
+    if (user) {
+        emailer.sendResetRequest(email, user.uniqueString);
+
+        var ret = {
+            email: email,
+            error: error
+        };
+    }
+
+    else {
+        error = 'No records found';
+
+        var ret = {
+            email: email,
+            error: error
+        };
+    }
+
+    res.status(200).json(ret);
+});
+
+// incoming: apiRoute (uniqueString), userName, password, retypePassword
+// Outgoing: userName, password, retypePassword, error
+// Purpose: confirms the user's uniqueString and userName prior to changing the user's password
+// app.post('/api/passwordResetincoming', async (req, res, next) => {
+app.post('/api/passwordResetIncoming/:uniqueString', async (req, res, next) => {
     const { uniqueString } = req.params;
     const { userName, password, retypePassword } = req.body;
     var error = '';
@@ -538,7 +577,7 @@ app.post('/api/passwordResetIncomming/:uniqueString', async (req, res, next) => 
         }
 
     } else {
-        error = 'user does not exist';
+        error = 'User does not exist';
 
         var ret = {
             userName: userName,
@@ -853,7 +892,7 @@ async function calculatePercentageOfWeightChange(arrayOfWeight) {
     }
 }
 
-// Incomming: userId
+// incoming: userId
 // Outgoing: userId, desiredWeight (most recent add), currentWeightDifferenceFromGoal (abs value), 
 //           percentageFromWeightGoal, arrayOfWeight[] 
 app.post('/api/outputWeight', async (req, res, next) => {
