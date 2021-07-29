@@ -24,6 +24,7 @@ var token = require('./createJWT.js');
 
 // sending emails
 var emailer = require('./sendEmail.js');
+const e = require('express');
 
 // Incoming: userName, email
 // Outgoing: user (singular)
@@ -363,6 +364,7 @@ app.get('/verify/:uniqueString', async (req, res) => {
     )
 
     if (user) {
+        // user already validated the account
         if (user.hasValidated == true) {
             error = 'User has already validated';
 
@@ -377,8 +379,10 @@ app.get('/verify/:uniqueString', async (req, res) => {
             };
         }
 
+        // user has not validated the account
         else {
             try {
+                // update hasValidated value from false to true
                 const db = client.db();
                 db.collection('users').updateOne(
                     { "uniqueString": uniqueString },
@@ -399,7 +403,7 @@ app.get('/verify/:uniqueString', async (req, res) => {
             };
 
             // TODO: change this to the login page once finished!
-            return res.redirect('http://google.com')
+            return res.redirect('http://google.com/')
         }
     }
 
@@ -432,7 +436,7 @@ app.get('/reset/:uniqueString', async (req, res) => {
 
     if (user) {
         if (user.hasValidated == true) {
-            error = 'User did not request password reset, please proceed to login';
+            error = 'This user did not request password reset, please proceed to login';
 
             var ret = {
                 firstName: user.firstName,
@@ -465,9 +469,6 @@ app.get('/reset/:uniqueString', async (req, res) => {
                 hasValidated: true,
                 uniqueString: user.uniqueString
             };
-
-            // TODO: change this to the password reset page once finished!
-            return res.redirect('http://google.com')
         }
     }
 
@@ -488,8 +489,67 @@ app.get('/reset/:uniqueString', async (req, res) => {
     res.status(200).json(ret);
 });
 
-app.post('/api/passwordResetOutgoing', async (req, res, next) => {
 
+
+// app.post('/api/passwordResetIncomming', async (req, res, next) => {
+app.post('/api/passwordResetIncomming/:uniqueString', async (req, res, next) => {
+    const { uniqueString } = req.params;
+    const { userName, password, retypePassword } = req.body;
+    var error = '';
+
+    // find the user using uniqueString and userName
+    const db = client.db();
+    const user = await db.collection('users').findOne(
+        {
+            $and: [
+                { "uniqueString": uniqueString },
+                { "userName": userName }
+            ]
+        }
+    )
+
+    if (user) {
+        // validating if the password and retypePassword are the same
+        if (password === retypePassword) {
+            db.collection('users').updateOne(
+                { userName: userName },
+                { $set: { "password": password } }
+            );
+
+            var ret = {
+                userName: userName,
+                password: password,
+                retypePassword: retypePassword,
+                uniqueString: uniqueString,
+                error: error
+            }
+        }
+
+        else {
+            error = 'password and retypePassword does not match';
+
+            var ret = {
+                userName: userName,
+                password: password,
+                retypePassword: retypePassword,
+                uniqueString: uniqueString,
+                error: error
+            }
+        }
+
+    } else {
+        error = 'user does not exist';
+
+        var ret = {
+            userName: userName,
+            password: password,
+            retypePassword: retypePassword,
+            uniqueString: uniqueString,
+            error: error
+        }
+    }
+
+    res.status(200).json(ret);
 });
 
 // Incoming: new user's firstName, lastName, userName, password, email
@@ -501,12 +561,14 @@ app.post('/api/register', async (req, res, next) => {
     var error = '';
 
     // Check to see if the new user already exists in the database
-    var isTheNewUserDuplicate = await getUser(userName, password);
+    var isTheNewUserDuplicate = await getUser(userName, email);
 
     if (!isTheNewUserDuplicate) {
 
         // generate the randomized string for the url account confirmation link
         const _uniqueString = await randomizeString();
+
+        // send the email to user for account verification with the uniqueString identifier
         emailer.sendVerification(email, _uniqueString);
 
         const registerNewUser = {
@@ -582,8 +644,9 @@ app.post('/api/login', async (req, res, next) => {
     var error = '';
 
     const db = client.db();
-    const results = await
-        db.collection('users').find({ userName: login, password: password }).toArray();
+    const results = await db.collection('users').find(
+        { userName: login, password: password }
+    ).toArray();
 
     var id = -1;
     var fn = '';
@@ -594,8 +657,7 @@ app.post('/api/login', async (req, res, next) => {
         id = results[0].userId;
         fn = results[0].firstName;
         ln = results[0].lastName;
-        email = results[0].email
-
+        email = results[0].email;
 
         try {
             const token = require("./createJWT.js");
@@ -871,9 +933,25 @@ app.post('/api/outputWeight', async (req, res, next) => {
 //           monday - sunday boolean values, error string
 app.post('/api/addItem', async (req, res, next) => {
 
-    const { userId, workout, hy, rx, item, waterAmount, date,
-        time, monday, tuesday, wednesday, thursday, friday, saturday, sunday, jwtToken } = req.body;
+    const {
+        userId,
+        workout,
+        hy,
+        rx,
+        item,
+        waterAmount,
+        time,
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+        sunday,
+        jwtToken
+    } = req.body;
 
+    var error = '';
 
     // validate time remaining of JWT 
     try {
@@ -891,23 +969,18 @@ app.post('/api/addItem', async (req, res, next) => {
         console.log(e.message);
     }
 
-
-    var error = '';
-
     const itemAdd = {
         userId: userId,
         workout: workout,
         hy: hy,
         rx: rx,
         item: item,
-        waterAmount: waterAmount,
-        date: date
+        waterAmount: waterAmount
     }
 
     //Prepping an item package, try to see if item is added successfully into DB
     //Error string from below try catch will be appended to return status
     try {
-
         const db = client.db();
         var _itemObj = db.collection('items').insertOne(itemAdd);
 
@@ -916,9 +989,6 @@ app.post('/api/addItem', async (req, res, next) => {
     }
 
     var newlyCreatedItem = await getItemUsingObjId((await _itemObj).insertedId);
-
-    // Debug: delete me!
-    console.log("<newlyCreatedItem> status: " + newlyCreatedItem);
 
     // prepping an alarm package, trying to see if alarm is added successfully into DB
     // error string from below try catch will be appended to return status
@@ -960,7 +1030,6 @@ app.post('/api/addItem', async (req, res, next) => {
         rx: rx,
         item: item,
         waterAmount: waterAmount,
-        date: date,
         itemId: newlyCreatedItem._id.toString().trim(),
         time: time,
         monday: monday,
@@ -970,7 +1039,7 @@ app.post('/api/addItem', async (req, res, next) => {
         friday: friday,
         saturday: saturday,
         sunday: sunday,
-        error: '',
+        error: error,
         jwtToken: refreshedToken
     };
 
@@ -990,7 +1059,8 @@ app.post('/api/editItem', async (req, res, next) => {
         hy,
         workout,
         waterAmount,
-        time, monday,
+        time,
+        monday,
         tuesday,
         wednesday,
         thursday,
@@ -1001,19 +1071,9 @@ app.post('/api/editItem', async (req, res, next) => {
 
     var error = '';
 
-    // Initiate error string and attempt to retrieve both item and alarm
-
     var itemretrieved = await getItemUsingObjId(itemId);
 
-    console.log(itemretrieved);
-
-    // In the event both the item and alarm have been successfully retrieved...
-
     if (itemretrieved != null) {
-
-        // Update item object's and alarm object's returned properties with new updated values from parameters
-
-        var alarmretrieved = await getAlarm(itemId);
 
         try {
             var ObjectId = require('mongodb').ObjectId;
@@ -1032,7 +1092,6 @@ app.post('/api/editItem', async (req, res, next) => {
                         "waterAmount": waterAmount
                     }
                 }
-
             );
 
             db.collection('alarms').updateOne(
@@ -1052,11 +1111,8 @@ app.post('/api/editItem', async (req, res, next) => {
             );
 
         } catch (e) {
-
             error = e.toString();
         }
-
-        // Append any error string in event of catch exception
 
         var ret = {
             item: item,
@@ -1073,9 +1129,7 @@ app.post('/api/editItem', async (req, res, next) => {
             sunday: sunday,
             error: error
         };
-
     }
-
 
     // Return values updated with error string declaring item not found
     else if (itemretrieved == null) {
@@ -1094,27 +1148,6 @@ app.post('/api/editItem', async (req, res, next) => {
             saturday: saturday,
             sunday: sunday,
             error: "Item returned null"
-        };
-    }
-
-    // Return values updated with error string declaring alarm not found
-
-    else if (alarmretrieved == null) {
-
-        var ret = {
-            item: item,
-            rx: rx,
-            hy: hy,
-            workout: workout,
-            time: time,
-            monday: monday,
-            tuesday: tuesday,
-            wednesday: wednesday,
-            thursday: thursday,
-            friday: friday,
-            saturday: saturday,
-            sunday: sunday,
-            error: "Alarm returned null"
         };
     }
 
