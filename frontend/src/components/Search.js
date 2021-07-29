@@ -236,17 +236,16 @@ class Search extends Component
         return (
             <div class="search-container">
                 <div class="search-child bar">
-                    <h3>Search</h3>
-                    <input type="text" class="searchbar" name="search" onChange={this.handleInputChange}/>
+                    <h3>Health Dashboard</h3>
+                    <input type="text" class="searchbar" name="search" placeholder="Input item names to search" onChange={this.handleInputChange}/>
                     
                     <Tooltip title="Search">
                         <Button type="primary" shape="square" icon={<SearchOutlined />} className="search-button" onClick={() => this.doSearch()} />
                     </Tooltip> 
                 </div>
-                <div><h4>Results</h4></div>
                 
                 <div>
-                    <Table dataSource={this.state.dataSource} columns={columns} pagination={{ pageSize: 5, size: 'small'}}/>
+                    <Table dataSource={this.state.dataSource} columns={columns} pagination={{ pageSize: 4, size: 'small'}}/>
                 </div>
             </div>  
         );

@@ -36,7 +36,7 @@ const MainPage = () =>
                             </div>
                             <Tabs defaultTab="vertical-tab-one" vertical class="vertical-tabs">
                                 <TabList>
-                                    <Tab tabFor="vertical-tab-zero">Search</Tab>
+                                    <Tab tabFor="vertical-tab-zero">Health Dashboard</Tab>
                                     <Tab tabFor="vertical-tab-one">Prescription</Tab>
                                     <Tab tabFor="vertical-tab-two">Workouts</Tab>
                                     <Tab tabFor="vertical-tab-three">Weight Tracking</Tab>
