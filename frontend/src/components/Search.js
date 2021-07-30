@@ -135,7 +135,7 @@ class Search extends Component
                     dataSource: dataSource.filter((item) => item.itemId !== itemId),
                 });
 
-                this.showNotification('success', 'Successfully deleted item!');
+                this.showNotification('success', 'Successfully deleted alarm!');
             }
             else
             {

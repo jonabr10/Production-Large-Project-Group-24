@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from "react-dom";
 import './css/Menu.css';
-import { Divider, Button, TimePicker, Statistic, Select, Alert } from 'antd';
+import { Divider, Button, TimePicker, Statistic, Select, Alert, notification } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import image from './img/water.png';
 
@@ -18,53 +18,146 @@ class Hydration extends Component
                 time: '',
                 timeString: ''
             },
-            days: ''
+            days: '',
+            selectedDays: [],
+            selectedTime: null
         }
     }
 
     handleInputChange = ({ target }) => 
     {
-        this.setState({ [target.name]: target.value });
+        this.setState({ alarmName: target.value });
     }
 
     handleTimeInputChange = (time, timeString) => 
     {
+        debugger;
         this.setState({ timeObj: { time: time, timeString: timeString } });
+        this.setState({ selectedTime: time });
     }
 
     handleDayInputChange = (days) => 
     {
         this.setState({ days: days });
+        this.setState({ selectedDays: days });
     }
 
     doCreate = () =>
     {
         if (this.areFieldsValid())
-        {
-            let timeStamp = this.state.timeObj.time;
-            alert("days: " + this.state.days);
+        {   
+            let pathBuilder = require('../Path');
+            let tokenStorage = require('../tokenStorage');
+            let daysOfWeek = this.state.days;
+    
+            let addItemPayload = 
+            {
+                userId: this.props.userData.id,
+                item: this.state.alarmName,
+                workout: false,
+                hy: true,
+                rx: false,
+                waterAmount: 0,
+                time: this.state.timeObj.time.toString(),
+                monday: daysOfWeek.includes('monday'),
+                tuesday: daysOfWeek.includes('tuesday'),
+                wednesday: daysOfWeek.includes('wednesday'),
+                thursday: daysOfWeek.includes('thursday'),
+                friday: daysOfWeek.includes('friday'),
+                saturday: daysOfWeek.includes('saturday'),
+                sunday: daysOfWeek.includes('sunday'),
+                jwtToken: tokenStorage.retrieveToken()
+            }
+
+            let httpRequest = 
+            {
+                method: 'post',
+                body: JSON.stringify(addItemPayload),
+                headers: {'Content-Type': 'application/json; charset=utf-8'}
+            }
+            
+            fetch(pathBuilder.buildPath('api/addItem'), httpRequest)
+            .then(this.checkResponse)
+            .catch(function(error) { console.log(error); })
+            .then(response => response.json())
+            .then(responseData =>
+            {
+                if (responseData.error.length === 0)
+                {
+                    tokenStorage.storeToken(responseData.jwtToken);
+                    this.clearAllFields();
+                    this.showNotification('success', 'Successfully created alarm!');
+                }
+                else
+                {
+                    this.showNotification('error', responseData.error);
+                }
+            });
         }
     }
 
-    /*
+    clearAllFields = () =>
     {
-        "userId": 13,
-        "item": "zinc",
-        "workout": false,
-        "hy": true,
-        "rx": true,
-        "waterAmount": 8,
-        "time": "Mon Jul 19 2021 23:23:55 GMT-0400 (EDT)",
-        "monday": true,
-        "tuesday": true,
-        "wednesday": true,
-        "thursday": true,
-        "friday": true,
-        "saturday": true,
-        "sunday": true,
-        "jwtToken": "isfi83ri8dldlfsi9"
+        document.getElementById('alarmNameHy').value = '';
+        this.clearSelectedTime();
+        this.clearSelectedDays();
+        
+        this.setState
+        ({ 
+            alarmName: '',
+            timeObj: 
+            {
+                time: '',
+                timeString: ''
+            },
+            days: ''
+        });
     }
-    */
+
+    clearSelectedDays = () => 
+    {
+        this.setState({ selectedDays: []});
+    }
+
+    clearSelectedTime = () => 
+    {
+        this.setState({ selectedTime: null});
+    }
+
+    checkResponse = (response) =>
+    {
+        if (response.status >= 500)
+        {
+            this.showNotification('error', 'Server Error: Did not get a valid response from server!');
+            throw new Error('Invalid JSON from server - probably a server error');
+        }
+
+        return response;
+    }
+
+    showNotification = (notificationType, message) =>
+    {
+        let config = 
+        {
+            message: message,
+            placement: 'bottomLeft'
+        }; 
+
+        if (notificationType === 'success')
+        {
+            notification.success(config);
+        }
+
+        if (notificationType === 'error')
+        {
+            notification.error(config);
+        }
+
+        if (notificationType === 'warning')
+        {
+            notification.warning(config);
+        }
+    }
 
     areFieldsValid = () => 
     {
@@ -109,25 +202,25 @@ class Hydration extends Component
             <div class="grid-container">   
                 <div>
                     <br></br>
-                    <h3>Hydration</h3>
-                    <Divider>Create alarms for water intake</Divider>
+                    <h3>Prescriptions</h3>
+                    <Divider>Create alarms for prescriptions</Divider>
                 </div>
 
                 <div class="float-left">
                     <div class="inner">
                         <div className="form-group">
                             <label>Alarm Name</label>
-                            <input type="text" id="alarmName" name="alarmName" className="form-control" placeholder="Describe this alarm" maxLength="50" onChange={this.handleInputChange} />
+                            <input type="text" id="alarmNameHy" name="alarmNameHy" className="form-control" placeholder="Describe this alarm" maxLength="50" onChange={this.handleInputChange} />
                         </div>
                         
                         <div className="form-group">
                             <label>Time</label>
-                            <TimePicker use12Hours id="time" name="time" className="form-control time-input" format="h:mm a" placeholder="Select a time" onChange={this.handleTimeInputChange} />
+                            <TimePicker use12Hours value={this.state.selectedTime} id="time" name="time" className="form-control time-input" format="h:mm a" placeholder="Select a time" onChange={this.handleTimeInputChange} />
                         </div>
 
                         <div className="form-group">
                             <label>Days</label>
-                            <Select mode="multiple" id="days" name="days" className="days-input" placeholder="Select days for alarm to trigger" onChange={this.handleDayInputChange}>
+                            <Select mode="multiple" value={this.state.selectedDays} id="days" name="days" className="days-input" placeholder="Select days for alarm to trigger" onChange={this.handleDayInputChange}>
                                 {daysOfWeek}
                             </Select>
                         </div>
@@ -151,7 +244,7 @@ class Hydration extends Component
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>  
         );
     }
 }
