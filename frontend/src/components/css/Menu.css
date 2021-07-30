@@ -90,3 +90,7 @@ table{
     width: 160px;
     height: 33px;
 }
+
+.save-cancel-button {
+    margin-right: 10px;
+}

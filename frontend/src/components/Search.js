@@ -45,7 +45,6 @@ class Search extends Component
     handleWaterInputChange = ({ target }) => 
     {
         this.setState({ waterAmount: target.value });
-        alert(target.value);
     }
 
     handleTimeInputChange = (time, timeString) => 
@@ -236,12 +235,53 @@ class Search extends Component
 
     startEditing = (itemId) => 
     {
+        if (this.state.editingRecord.isEditing)
+        {
+            this.stopEditing();
+        }
+
         this.setEditing(true, itemId);
     }
 
     stopEditing = () => 
     {
         this.setEditing(false, '');
+        this.clearAllFields();
+    }
+
+    clearAllFields = () =>
+    {
+        let alarmRef =  document.getElementById('alarmNameT');
+        if (alarmRef != null) alarmRef.value = '';
+        
+        let waterRef =  document.getElementById('waterAmountT');
+        if (waterRef != null) waterRef.value = '';
+
+        this.clearSelectedTime();
+        this.clearSelectedDays();
+        
+        this.setState
+        ({ 
+            alarmName: '',
+            category: '',
+            timeObj: 
+            {
+                time: '',
+                timeString: ''
+            },
+            days: '',
+            waterAmount: 0
+        });
+    }
+
+    clearSelectedDays = () => 
+    {
+        this.setState({ selectedDays: []});
+    }
+
+    clearSelectedTime = () => 
+    {
+        this.setState({ selectedTime: null});
     }
 
     render()
@@ -309,7 +349,7 @@ class Search extends Component
                     (
                         <div className="form-group">
                             <input type="text" id="alarmNameT" name="alarmNameT" className="alarmName-input-table form-control" placeholder={record.description} maxLength="50" onChange={this.handleAlarmInputChange} />
-                            <input type="number" id="waterAmount" name="waterAmount" className="alarmName-input-table form-control" placeholder="New water amount (oz)" min="0" onChange={this.handleWaterInputChange} />
+                            <input type="number" id="waterAmountT" name="waterAmountT" className="alarmName-input-table form-control" placeholder="New water amount (oz)" min="0" onChange={this.handleWaterInputChange} />
                         </div>
                     )
                     : this.isEditing(record.itemId) ?
@@ -355,13 +395,23 @@ class Search extends Component
                 {
                     return this.isEditing(record.itemId) ? 
                     (
-                        <a 
+                        <div>
+                            <a 
+                                href="javascript:;"
+                                onClick={ () => this.doEdit() }
+                                className="save-cancel-button"
+                            >
+                                Save
+                            </a>
+
+                            <a 
                             href="javascript:;"
                             onClick={ () => this.stopEditing() }
-                            className="mr-3"
-                        >
-                            Stop Editing
-                        </a>
+                            className="save-cancel-button"
+                            >
+                                Cancel
+                            </a>
+                        </div>
                     )
                     :
                     (
