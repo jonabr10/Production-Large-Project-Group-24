@@ -77,3 +77,16 @@ table{
 .days-input {
     width: 280px;
 }
+
+.time-input-table {
+    width: 200px;
+}
+
+.days-input-table {
+    width: 200px;
+}
+
+.alarmName-input-table {
+    width: 160px;
+    height: 33px;
+}

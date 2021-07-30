@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './css/Search.css';
-import { Button, Tooltip, Table, Space, Popconfirm, notification } from 'antd';
+import { Button, Tooltip, Table, Space, Popconfirm, notification, Select, TimePicker } from 'antd';
 import { SearchOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 class Search extends Component
@@ -45,6 +45,7 @@ class Search extends Component
     handleWaterInputChange = ({ target }) => 
     {
         this.setState({ waterAmount: target.value });
+        alert(target.value);
     }
 
     handleTimeInputChange = (time, timeString) => 
@@ -57,6 +58,11 @@ class Search extends Component
     {
         this.setState({ days: days });
         this.setState({ selectedDays: days });
+    }
+
+    handleCategoryInputChange = (category) => 
+    {
+        this.setState({ category: category });
     }
 
     doSearch = () =>
@@ -137,7 +143,7 @@ class Search extends Component
 
     doEdit = (itemId) =>
     {
-        alert(itemId);
+        
     }
 
     doDelete = (itemId) =>
@@ -240,6 +246,17 @@ class Search extends Component
 
     render()
     {
+        const { Option } = Select;
+
+        const daysOfWeek = [];
+        daysOfWeek.push(<Option key={"monday"}>{"Monday"}</Option>);
+        daysOfWeek.push(<Option key={"tuesday"}>{"Tuesday"}</Option>);
+        daysOfWeek.push(<Option key={"wednesday"}>{"Wednesday"}</Option>);
+        daysOfWeek.push(<Option key={"thursday"}>{"Thursday"}</Option>);
+        daysOfWeek.push(<Option key={"friday"}>{"Friday"}</Option>);
+        daysOfWeek.push(<Option key={"saturday"}>{"Saturday"}</Option>);
+        daysOfWeek.push(<Option key={"sunday"}>{"Sunday"}</Option>);
+
         const columns = 
         [
             {
@@ -268,7 +285,11 @@ class Search extends Component
                     return this.isEditing(record.itemId) ? 
                     (
                         <div>
-                            we editing!!
+                            <Select defaultValue={record.category} id="category" name="category" onChange={this.handleCategoryInputChange}>
+                                <Option value={"prescription"}>Prescription</Option>
+                                <Option value={"hydration"}>Hydration</Option>
+                                <Option value={"workout"}>Workout</Option>
+                            </Select>
                         </div>
                     )
                     :
@@ -284,10 +305,17 @@ class Search extends Component
 
                 render: (_, record) => 
                 {
-                    return this.isEditing(record.itemId) ? 
+                    return this.isEditing(record.itemId) && record.category === "Hydration" ? 
                     (
-                        <div>
-                            we editing!!
+                        <div className="form-group">
+                            <input type="text" id="alarmNameT" name="alarmNameT" className="alarmName-input-table form-control" placeholder={record.description} maxLength="50" onChange={this.handleAlarmInputChange} />
+                            <input type="number" id="waterAmount" name="waterAmount" className="alarmName-input-table form-control" placeholder="New water amount (oz)" min="0" onChange={this.handleWaterInputChange} />
+                        </div>
+                    )
+                    : this.isEditing(record.itemId) ?
+                    (
+                        <div className="form-group">
+                            <input type="text" id="alarmNameT" name="alarmNameT" className="alarmName-input-table form-control" placeholder={record.description} maxLength="50" onChange={this.handleAlarmInputChange} />
                         </div>
                     )
                     :
@@ -306,8 +334,11 @@ class Search extends Component
                 {
                     return this.isEditing(record.itemId) ? 
                     (
-                        <div>
-                            we editing!!
+                        <div className="form-group">
+                            <TimePicker use12Hours value={this.state.selectedTime} id="time" name="time" className="time-input-table" format="h:mm a" placeholder="Select a new time" onChange={this.handleTimeInputChange} />
+                            <Select mode="multiple" value={this.state.selectedDays} id="days" name="days" className="days-input-table" placeholder="Select new days" onChange={this.handleDayInputChange}>
+                                {daysOfWeek}
+                            </Select>
                         </div>
                     )
                     :
