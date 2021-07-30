@@ -210,8 +210,8 @@ class Hydration extends Component
             <div class="grid-container">   
                 <div>
                     <br></br>
-                    <h3>Prescriptions</h3>
-                    <Divider>Create alarms for prescriptions</Divider>
+                    <h3>Hydration</h3>
+                    <Divider>Create alarms to keep hydrated</Divider>
                 </div>
 
                 <div class="float-left">
