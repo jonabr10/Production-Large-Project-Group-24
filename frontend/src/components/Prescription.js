@@ -31,7 +31,6 @@ class Prescription extends Component
 
     handleTimeInputChange = (time, timeString) => 
     {
-        debugger;
         this.setState({ timeObj: { time: time, timeString: timeString } });
         this.setState({ selectedTime: time });
     }

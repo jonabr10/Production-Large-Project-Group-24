@@ -21,14 +21,42 @@ class Search extends Component
             alarmName: '',
             category: '',
             waterAmount: 0,
-            time: '',
-            daysRepeating: []
+            timeObj: 
+            {
+                time: '',
+                timeString: ''
+            },
+            days: '',
+            selectedDays: [],
+            selectedTime: null
         }
     }
 
     handleInputChange = ({ target }) => 
     {
         this.setState({ [target.name]: target.value });
+    }
+
+    handleAlarmInputChange = ({ target }) => 
+    {
+        this.setState({ alarmName: target.value });
+    }
+
+    handleWaterInputChange = ({ target }) => 
+    {
+        this.setState({ waterAmount: target.value });
+    }
+
+    handleTimeInputChange = (time, timeString) => 
+    {
+        this.setState({ timeObj: { time: time, timeString: timeString } });
+        this.setState({ selectedTime: time });
+    }
+
+    handleDayInputChange = (days) => 
+    {
+        this.setState({ days: days });
+        this.setState({ selectedDays: days });
     }
 
     doSearch = () =>
