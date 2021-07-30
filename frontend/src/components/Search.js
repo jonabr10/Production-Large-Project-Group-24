@@ -12,7 +12,17 @@ class Search extends Component
         this.state = 
         {
             search: '',
-            dataSource: null
+            dataSource: null,
+            editingRecord:
+            {
+                isEditing: false,
+                itemId: ''
+            },
+            alarmName: '',
+            category: '',
+            waterAmount: 0,
+            time: '',
+            daysRepeating: []
         }
     }
 
@@ -180,6 +190,26 @@ class Search extends Component
         }
     }
 
+    isEditing = (itemId) => 
+    {
+        return this.state.editingRecord.isEditing && this.state.editingRecord.itemId == itemId;
+    }
+
+    setEditing = (isEditing, itemId) => 
+    {
+        this.setState({ editingRecord: {isEditing: isEditing, itemId: itemId} });
+    }
+
+    startEditing = (itemId) => 
+    {
+        this.setEditing(true, itemId);
+    }
+
+    stopEditing = () => 
+    {
+        this.setEditing(false, '');
+    }
+
     render()
     {
         const columns = 
@@ -204,17 +234,59 @@ class Search extends Component
                     },
                 ],
                 onFilter: (value, record) => record.category.indexOf(value) === 0,
+
+                render: (_, record) => 
+                {
+                    return this.isEditing(record.itemId) ? 
+                    (
+                        <div>
+                            we editing!!
+                        </div>
+                    )
+                    :
+                    (
+                        record.category
+                    );
+                }
             },
             {
                 title: 'Description',
                 dataIndex: 'description',
                 key: 'description',
+
+                render: (_, record) => 
+                {
+                    return this.isEditing(record.itemId) ? 
+                    (
+                        <div>
+                            we editing!!
+                        </div>
+                    )
+                    :
+                    (
+                        record.description
+                    );
+                }
             },
             {
                 title: 'Alarm Status',
                 dataIndex: 'alarm',
                 key: 'alarm',
-                width: 325
+                width: 325,
+                
+                render: (_, record) => 
+                {
+                    return this.isEditing(record.itemId) ? 
+                    (
+                        <div>
+                            we editing!!
+                        </div>
+                    )
+                    :
+                    (
+                        record.alarm
+                    );
+                }
             },
             {
                 title: "Action",
@@ -222,17 +294,29 @@ class Search extends Component
                 width: 180,
                 render: (_, record) => 
                 {
-                    return (
+                    return this.isEditing(record.itemId) ? 
+                    (
+                        <a 
+                            href="javascript:;"
+                            onClick={ () => this.stopEditing() }
+                            className="mr-3"
+                        >
+                            Stop Editing
+                        </a>
+                    )
+                    :
+                    (
                         <div>
                             <Space size="small">
-                                <Button type="primary" shape="square" size="small" icon={<EditOutlined />} onClick={() => { this.doEdit(record.itemId); }}> Edit </Button>
+                                <Button type="primary" shape="square" size="small" icon={<EditOutlined />} onClick={() => { this.startEditing(record.itemId); }}> Edit </Button>
+                                
                                 
                                 <Popconfirm title="Are you sure you want to delete?" onConfirm={() => { this.doDelete(record.itemId); }}>
                                     <Button type="ghost" shape="square" size="small" icon={<DeleteOutlined />}> Delete </Button>
                                 </Popconfirm >
                             </Space>
                         </div>
-                    )
+                    );
                 }
             }
         ];
