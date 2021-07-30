@@ -77,11 +77,12 @@ class Search extends Component
                     }
 
                     let alarmStatus = estTime != null ? `${estTime} (${daysRepeating.join(', ')})` : rawTime;
+                    let itemName = result.hy ? `${result.item} (${result.waterAmount} oz)` : result.item;
                     dataSource.push
                     ({
                         itemId: result._id,
                         category: category,
-                        description: result.item,
+                        description: itemName,
                         alarm: alarmStatus
                     });
                 });
