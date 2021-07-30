@@ -20,13 +20,19 @@ class Hydration extends Component
             },
             days: '',
             selectedDays: [],
-            selectedTime: null
+            selectedTime: null,
+            waterAmount: 0
         }
     }
 
     handleInputChange = ({ target }) => 
     {
         this.setState({ alarmName: target.value });
+    }
+
+    handleWaterInputChange = ({ target }) => 
+    {
+        this.setState({ waterAmount: target.value });
     }
 
     handleTimeInputChange = (time, timeString) => 
@@ -57,7 +63,7 @@ class Hydration extends Component
                 workout: false,
                 hy: true,
                 rx: false,
-                waterAmount: 0,
+                waterAmount: parseInt(this.state.waterAmount),
                 time: this.state.timeObj.time.toString(),
                 monday: daysOfWeek.includes('monday'),
                 tuesday: daysOfWeek.includes('tuesday'),
@@ -99,6 +105,7 @@ class Hydration extends Component
     clearAllFields = () =>
     {
         document.getElementById('alarmNameHy').value = '';
+        document.getElementById('waterAmount').value = '';
         this.clearSelectedTime();
         this.clearSelectedDays();
         
@@ -110,7 +117,8 @@ class Hydration extends Component
                 time: '',
                 timeString: ''
             },
-            days: ''
+            days: '',
+            waterAmount: 0
         });
     }
 
@@ -211,6 +219,7 @@ class Hydration extends Component
                         <div className="form-group">
                             <label>Alarm Name</label>
                             <input type="text" id="alarmNameHy" name="alarmNameHy" className="form-control" placeholder="Describe this alarm" maxLength="50" onChange={this.handleInputChange} />
+                            <input type="number" id="waterAmount" name="waterAmount" className="form-control" placeholder="Enter amount of water in ounces" min="0" onChange={this.handleWaterInputChange} />
                         </div>
                         
                         <div className="form-group">
