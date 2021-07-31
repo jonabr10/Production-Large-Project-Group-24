@@ -348,8 +348,8 @@ class Search extends Component
                     return this.isEditing(record.itemId) && record.category === "Hydration" ? 
                     (
                         <div className="form-group">
-                            <input type="text" id="alarmNameT" name="alarmNameT" className="alarmName-input-table form-control" placeholder={record.description} maxLength="50" onChange={this.handleAlarmInputChange} />
-                            <input type="number" id="waterAmountT" name="waterAmountT" className="alarmName-input-table form-control" placeholder="New water amount (oz)" min="0" onChange={this.handleWaterInputChange} />
+                            <input type="text" id="alarmNameT" name="alarmNameT" className="alarmName-input-table form-control" placeholder={record.description.split('(')[0]} maxLength="50" onChange={this.handleAlarmInputChange} />
+                            <input type="number" id="waterAmountT" name="waterAmountT" className="alarmName-input-table form-control" placeholder="Water (oz)" min="0" onChange={this.handleWaterInputChange} />
                         </div>
                     )
                     : this.isEditing(record.itemId) ?
