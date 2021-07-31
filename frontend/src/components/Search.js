@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
+import ReactDOM from "react-dom";
 import './css/Search.css';
-import { Button, Tooltip, Table, Space, Popconfirm, notification, Select, TimePicker } from 'antd';
+import { Button, Tooltip, Table, Space, Popconfirm, notification, Select, TimePicker, Alert } from 'antd';
 import { SearchOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 class Search extends Component
@@ -140,9 +141,65 @@ class Search extends Component
         });
     }
 
-    doEdit = (itemId) =>
+    doEdit = (record) =>
     {
-        
+        if (this.areFieldsValid())
+        {
+            let pathBuilder = require('../Path');
+            let tokenStorage = require('../tokenStorage');
+            let daysOfWeek = this.state.days;
+
+            let editPayload = 
+            {
+                userId: this.props.userData.id,
+                itemId: record.itemId,
+                item: this.state.alarmName,
+                workout: this.state.category === "workout",
+                hy: this.state.category === "hydration",
+                rx: this.state.category === "prescription",
+                waterAmount: this.state.waterAmount,
+                time: this.state.timeObj.time.toString(),
+                monday: daysOfWeek.includes('monday'),
+                tuesday: daysOfWeek.includes('tuesday'),
+                wednesday: daysOfWeek.includes('wednesday'),
+                thursday: daysOfWeek.includes('thursday'),
+                friday: daysOfWeek.includes('friday'),
+                saturday: daysOfWeek.includes('saturday'),
+                sunday: daysOfWeek.includes('sunday'),
+                jwtToken: tokenStorage.retrieveToken()
+            }
+
+            let httpRequest = 
+            {
+                method: 'post',
+                body: JSON.stringify(editPayload),
+                headers: {'Content-Type': 'application/json; charset=utf-8'}
+            }
+            
+            fetch(pathBuilder.buildPath('api/editItem'), httpRequest)
+            .then(this.checkResponse)
+            .catch(function(error) { console.log(error); })
+            .then(response => response.json())
+            .then(responseData =>
+            {
+                if (responseData.error.length === 0)
+                {
+                    tokenStorage.storeToken(responseData.jwtToken);
+                    
+                    record.category = this.capitalizeFirstLetter(this.state.category);
+                    record.description = this.state.alarmName;
+                    record.alarm = this.formatTime(this.state.timeObj.timeString, this.state.days);
+                    
+                    this.stopEditing();
+                    this.showNotification('success', 'Successfully created alarm!');
+
+                }
+                else
+                {
+                    this.showNotification('error', responseData.error);
+                }
+            });
+        }
     }
 
     doDelete = (itemId) =>
@@ -284,6 +341,69 @@ class Search extends Component
         this.setState({ selectedTime: null});
     }
 
+    areFieldsValid = () => 
+    {
+        let validFlag = true;
+
+        if (!this.areAllFieldsFilled())
+        {
+            const element = <Alert message= "Please fill out all information." banner />;
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlertT'));
+
+            validFlag = false;
+        }
+        else
+        {
+            const element = '';
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlertT'));
+        }
+        
+        return validFlag;
+    }
+
+    areAllFieldsFilled = () => 
+    {
+        return this.state.alarmName.length > 0 && this.state.timeObj.timeString.length > 0 && 
+            this.state.days.length > 0 && this.state.category.length > 0;
+    }
+
+    formatTime = (timeString, days) => 
+    {
+        timeString = timeString.trim();
+        let time = timeString.split(' ');
+        let timeNumber = time[0] + ':00 ';
+        let amOrPm = time[1] === 'am' ? 'AM' : 'PM';
+        time = timeNumber + amOrPm;
+        
+        let daysRepeating = [];
+        daysRepeating.push('Monday');
+        daysRepeating.push('Tuesday');
+        daysRepeating.push('Wednesday');
+        daysRepeating.push('Thursday');
+        daysRepeating.push('Friday');
+        daysRepeating.push('Saturday');
+        daysRepeating.push('Sunday');
+
+        let selectedDays = [];
+        daysRepeating.forEach(function(day)
+        {
+            if (days.includes(day.toLowerCase())) selectedDays.push(day);
+        });
+
+        return `${time} (${selectedDays.join(', ')})`;
+    }
+
+    capitalizeFirstLetter = (string) => 
+    {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    getDefaultCategoryValue = (category) => 
+    {
+        this.handleCategoryInputChange(category.toLowerCase());
+        return category;
+    }
+
     render()
     {
         const { Option } = Select;
@@ -325,7 +445,7 @@ class Search extends Component
                     return this.isEditing(record.itemId) ? 
                     (
                         <div>
-                            <Select defaultValue={record.category} id="category" name="category" onChange={this.handleCategoryInputChange}>
+                            <Select defaultValue={() => this.getDefaultCategoryValue(record.category)} id="category" name="category" onChange={this.handleCategoryInputChange}>
                                 <Option value={"prescription"}>Prescription</Option>
                                 <Option value={"hydration"}>Hydration</Option>
                                 <Option value={"workout"}>Workout</Option>
@@ -398,7 +518,7 @@ class Search extends Component
                         <div>
                             <a 
                                 href="javascript:;"
-                                onClick={ () => this.doEdit() }
+                                onClick={ () => this.doEdit(record) }
                                 className="save-cancel-button"
                             >
                                 Save
@@ -411,6 +531,8 @@ class Search extends Component
                             >
                                 Cancel
                             </a>
+
+                            <div id="invalidFieldsAlertT"></div>
                         </div>
                     )
                     :

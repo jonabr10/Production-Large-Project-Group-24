@@ -165,14 +165,14 @@ class Workouts extends Component
         if (!this.areAllFieldsFilled())
         {
             const element = <Alert message= "Please fill out all information." banner />;
-            ReactDOM.render(element, document.getElementById('invalidFieldsAlert'));
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlertW'));
 
             validFlag = false;
         }
         else
         {
             const element = '';
-            ReactDOM.render(element, document.getElementById('invalidFieldsAlert'));
+            ReactDOM.render(element, document.getElementById('invalidFieldsAlertW'));
         }
         
         return validFlag;
@@ -226,7 +226,7 @@ class Workouts extends Component
 
                         <br></br>
                         <Button type="default" shape="square" size="small" icon={<ClockCircleOutlined />} onClick={() => { this.doCreate(); }}> Create Alarm </Button>
-                        <div id="invalidFieldsAlert"></div>
+                        <div id="invalidFieldsAlertW"></div>
                     </div>
                 </div>
 
