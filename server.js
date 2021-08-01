@@ -771,7 +771,6 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
                 _id: alarmResults[i]._id,
                 userId: alarmResults[i].userId,
                 itemId: alarmResults[i].itemId,
-                date: alarmResults[i].date,
                 time: alarmResults[i].time,
                 monday: alarmResults[i].monday,
                 tuesday: alarmResults[i].tuesday,
@@ -813,10 +812,10 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
 // Incoming: userId, weight, date, desiredWeight
 // Outgoing: userId, weight, date, desiredWeight, error
-// Purpose: adds a new weight and desiredWeight input to the database
+// Purpose: adds/updates the weight and desiredWeight input to the database
 app.post('/api/addWeight', async (req, res, next) => {
 
-    const { userId, weight, date, desiredWeight, jwtToken } = req.body;
+    const { userId, weight, desiredWeight, jwtToken } = req.body;
     var error = '';
 
     // validate time remaining of JWT
@@ -835,19 +834,44 @@ app.post('/api/addWeight', async (req, res, next) => {
         console.log(e.message);
     }
 
-    const newWeight = {
-        userId: userId,
-        weight: weight,
-        date: date,
-        desiredWeight: desiredWeight
+    // check if the user has an existing weight input 
+    const db = client.db();
+    var sizeOfWeightCollection = await db.collection('weights').countDocuments(
+        { "userId": userId }
+    );
+
+    // no existing weight
+    if (sizeOfWeightCollection <= 0) {
+        try {
+            const newWeight = {
+                userId: userId,
+                weight: weight,
+                desiredWeight: desiredWeight
+            }
+
+            db.collection('weights').insertOne(newWeight);
+
+        } catch (e) {
+            error = e.toString();
+        }
     }
 
-    try {
-        const db = client.db();
-        db.collection('weights').insertOne(newWeight);
-
-    } catch (e) {
-        error = e.toString();
+    // user has an existing weight, then we update the existing weight
+    else {
+        try {
+            db.collection('weights').updateOne(
+                { "userId": userId },
+                {
+                    $set:
+                    {
+                        "weight": weight,
+                        "desiredWeight": desiredWeight,
+                    }
+                }
+            );
+        } catch (e) {
+            error = e.toString();
+        }
     }
 
     // refresh JWT
@@ -863,7 +887,6 @@ app.post('/api/addWeight', async (req, res, next) => {
     var ret = {
         userId: userId,
         weight: weight,
-        date: date,
         desiredWeight: desiredWeight,
         error: error,
         jwtToken: refreshedToken
