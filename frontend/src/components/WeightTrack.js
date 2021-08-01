@@ -91,13 +91,10 @@ class WeightTrack extends Component
             let addWeightPayload = 
             {
                 userId: this.props.userData.id,
-                date: "Mon Jul 23 2021 23:20:13 GMT-0400 (EDT)",
-                weight: 150,
-                desiredWeight: 125,
+                weight: parseInt(this.state.currentWeight),
+                desiredWeight: parseInt(this.state.desiredWeight),
                 jwtToken: tokenStorage.retrieveToken()
-            } // need backend to allow sending create and desired one at a time and to just 
-              //update an existing record rather than keep re-creating new ones
-              
+            } 
 
             let httpRequest = 
             {
@@ -115,8 +112,8 @@ class WeightTrack extends Component
                 if (responseData.error.length === 0)
                 {
                     tokenStorage.storeToken(responseData.jwtToken);
-                    this.clearAllFields();
-                    this.showNotification('success', 'Successfully created alarm!');
+                    this.clearCurrentWeightField();
+                    this.showNotification('success', 'Successfully updated weight!');
                 }
                 else
                 {
@@ -124,14 +121,47 @@ class WeightTrack extends Component
                 }
             });
         }
-        
     }
 
     createDesiredWeight = () =>
     {
         if (this.isDesiredWeightValid())
         {
-            alert(this.state.desiredWeight);
+            let pathBuilder = require('../Path');
+            let tokenStorage = require('../tokenStorage');
+    
+            let addWeightPayload = 
+            {
+                userId: this.props.userData.id,
+                weight: parseInt(this.state.currentWeight),
+                desiredWeight: parseInt(this.state.desiredWeight),
+                jwtToken: tokenStorage.retrieveToken()
+            }  
+
+            let httpRequest = 
+            {
+                method: 'post',
+                body: JSON.stringify(addWeightPayload),
+                headers: {'Content-Type': 'application/json; charset=utf-8'}
+            }
+            
+            fetch(pathBuilder.buildPath('api/addWeight'), httpRequest)
+            .then(this.checkResponse)
+            .catch(function(error) { console.log(error); })
+            .then(response => response.json())
+            .then(responseData =>
+            {
+                if (responseData.error.length === 0)
+                {
+                    tokenStorage.storeToken(responseData.jwtToken);
+                    this.clearDesiredWeightField();
+                    this.showNotification('success', 'Successfully updated weight goal!');
+                }
+                else
+                {
+                    this.showNotification('error', responseData.error);
+                }
+            });
         }
     }
 
