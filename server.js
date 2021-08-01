@@ -678,7 +678,9 @@ app.post('/api/register', async (req, res, next) => {
 });
 
 // Incoming: login, password
-// Outgoing: id, firstName, lastName, email, error
+// Outgoing: id, firstName, lastName, email, 
+//           numberHy, numberWorkout, numberRx, 
+//           weight, desiredWeight, currentWeightDifferenceFromGoal, error
 // Purpose: login for user, validates user's inputted login/password data
 app.post('/api/login', async (req, res, next) => {
 
