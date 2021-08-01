@@ -810,6 +810,192 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
     }
 });
 
+// Incoming: userId
+// Outgoing: numberHy
+// Purpose: provides a total count of hydration items of userId
+app.post('/api/numberOfHy', async (req, res, next) => {
+
+    const { userId, jwtToken } = req.body;
+    var error = '';
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    try {
+        const db = client.db();
+        var numberHy = await db.collection('items').countDocuments(
+            {
+                $and: [
+                    { "userId": userId },
+                    { "hy": true },
+                    { "workout": false },
+                    { "rx": false },
+                ]
+            }
+        );
+
+    } catch (e) {
+        error = e.message;
+        console.log('<numberOfHy> Error: ' + e.message);
+    }
+
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    var ret = {
+        numberHy: numberHy,
+        error: error,
+        jwtToken: refreshedToken
+
+    }
+
+    res.status(200).json(ret);
+});
+
+// Incoming: userId
+// Outgoing: numberHy
+// Purpose: provides a total count of workout items of userId
+app.post('/api/numberOfWorkout', async (req, res, next) => {
+
+    const { userId, jwtToken } = req.body;
+    var error = '';
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    try {
+        const db = client.db();
+        var numberWorkout = await db.collection('items').countDocuments(
+            {
+                $and: [
+                    { "userId": userId },
+                    { "hy": false },
+                    { "workout": true },
+                    { "rx": false },
+                ]
+            }
+        );
+
+    } catch (e) {
+        error = e.message;
+        console.log('<numberOfWorkout> Error: ' + e.message);
+    }
+
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    var ret = {
+        numberWorkout: numberWorkout,
+        error: error,
+        jwtToken: refreshedToken
+
+    }
+
+    res.status(200).json(ret);
+});
+
+// Incoming: userId
+// Outgoing: numberHy
+// Purpose: provides a total count of rx items of userId
+app.post('/api/numberOfRx', async (req, res, next) => {
+
+    const { userId, jwtToken } = req.body;
+    var error = '';
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    try {
+        const db = client.db();
+        var numberRx = await db.collection('items').countDocuments(
+            {
+                $and: [
+                    { "userId": userId },
+                    { "hy": false },
+                    { "workout": false },
+                    { "rx": true },
+                ]
+            }
+        );
+
+    } catch (e) {
+        error = e.message;
+        console.log('<numberOfRx> Error: ' + e.message);
+    }
+
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    var ret = {
+        numberRx: numberRx,
+        error: error,
+        jwtToken: refreshedToken
+
+    }
+
+    res.status(200).json(ret);
+});
+
 // Incoming: userId, weight, date, desiredWeight
 // Outgoing: userId, weight, date, desiredWeight, error
 // Purpose: adds/updates the weight and desiredWeight input to the database
