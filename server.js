@@ -25,6 +25,8 @@ var token = require('./createJWT.js');
 // sending emails
 var emailer = require('./sendEmail.js');
 const e = require('express');
+const { type } = require('os');
+const { query } = require('express');
 
 // Incoming: userName, email
 // Outgoing: user (singular)
@@ -679,6 +681,7 @@ app.post('/api/register', async (req, res, next) => {
 // Outgoing: id, firstName, lastName, email, error
 // Purpose: login for user, validates user's inputted login/password data
 app.post('/api/login', async (req, res, next) => {
+
     const { login, password } = req.body;
     var error = '';
 
@@ -734,12 +737,119 @@ app.post('/api/login', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
+// Incoming: none
+// Outgoing: current time HH:MM (string format)
+async function getCurrentTime() {
+    let date_ob = new Date();
+
+    var hours = date_ob.getHours();
+    var minutes = date_ob.getMinutes();
+
+    var currentTime = (
+        ('0' + hours).slice(-2) +
+        ":" +
+        ('0' + minutes).slice(-2)
+    ).toString().trim();
+
+    // debug: check current time
+    // console.log(currentTime);
+
+    return currentTime;
+}
+
+// Incoming: none
+// Outgoing: current day [monday - sunday] (string format)
+async function getCurrentDay() {
+    let date_ob = new Date();
+
+    // Sunday - Saturday : 0 - 6
+    var day = date_ob.getDay();
+    var stringDay = '';
+
+    if (day == 0)
+        stringDay = 'sunday';
+
+    else if (day == 1)
+        stringDay = 'monday';
+
+    else if (day == 2)
+        stringDay = 'tuesday';
+
+    else if (day == 3)
+        stringDay = 'wednesday';
+
+    else if (day == 4)
+        stringDay = 'thursday';
+
+    else if (day == 5)
+        stringDay = 'friday';
+
+    else
+        stringDay = 'saturday';
+
+    // debug: check current time
+    // console.log(stringDay + " " + typeof (stringDay));
+
+    return stringDay;
+}
+
+// Incoming: userId
+// Outgoing: all user Alarms[] scheduled to run at current time
+// Purpose: provides a JSON array of all the alarms that is associated to userId value 
+app.post('/api/getAllUserScheduledAlarms', async (req, res, next) => {
+    const { userId } = req.body;
+    var error = '';
+
+    // returns a string format of the current time GMT-0400 in HH:MM format
+    var currentTime = await getCurrentTime();
+
+    // returns a string format of the current day (monday, tuesday, etc..)
+    var currentDay = await getCurrentDay();
+    query[currentDay] = true;
+
+    const db = client.db();
+    const alarmResults = await db.collection('alarms').find({
+        $and: [
+            { "userId": userId },
+            { "time": { $regex: currentTime + '.*', $options: 'r' } },
+            { query }
+        ]
+    }).toArray();
+
+    var _retAlarms = [];
+
+    if (alarmResults.length > 0) {
+        for (var i = 0; i < alarmResults.length; i++) {
+            // get the item associated with the alarm
+            var _item = await getItemUsingObjId(alarmResults[i].itemId);
+
+            _retAlarms.push({
+                userId: alarmResults[i].userId,
+                item: _item.item,
+                time: alarmResults[i].time
+            });
+        }
+    }
+
+    else {
+        error = 'No records found';
+    }
+
+    var ret = {
+        Alarms: _retAlarms,
+        error: error
+    }
+
+    res.status(200).json(ret);
+});
+
 // Incoming: userId
 // Outgoing: all user Alarms[] w/ userId
 // Purpose: provides a JSON array of all the alarms that is associated to userId value
 app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
     const { userId, jwtToken } = req.body;
+    var error = '';
 
     // validate time remaining of JWT
     try {
@@ -793,7 +903,7 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
         var ret = {
             Alarms: _retAlarms,
-            error: " ",
+            error: error,
             jwtToken: refreshedToken
         };
 
@@ -801,9 +911,11 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
     }
 
     else {
+        error = "No records found";
+
         var ret = {
             results: _ret,
-            error: "No records found"
+            error: error
         };
 
         res.status(200).json(ret);
