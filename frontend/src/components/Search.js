@@ -187,7 +187,7 @@ class Search extends Component
                     tokenStorage.storeToken(responseData.jwtToken);
                     
                     record.category = this.capitalizeFirstLetter(this.state.category);
-                    record.description = this.state.alarmName;
+                    record.description = this.state.category === "hydration" ? `${this.state.alarmName} (${this.state.waterAmount} oz)` : this.state.alarmName;
                     record.alarm = this.formatTime(this.state.timeObj.timeString, this.state.days);
                     
                     this.stopEditing();
@@ -465,7 +465,7 @@ class Search extends Component
 
                 render: (_, record) => 
                 {
-                    return this.isEditing(record.itemId) && record.category === "Hydration" ? 
+                    return this.isEditing(record.itemId) && this.state.category === "hydration" ? 
                     (
                         <div className="form-group">
                             <input type="text" id="alarmNameT" name="alarmNameT" className="alarmName-input-table form-control" placeholder={record.description.split('(')[0]} maxLength="50" onChange={this.handleAlarmInputChange} />

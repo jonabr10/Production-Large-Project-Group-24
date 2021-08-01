@@ -97,7 +97,7 @@ class WeightTrack extends Component
                 jwtToken: tokenStorage.retrieveToken()
             } // need backend to allow sending create and desired one at a time and to just 
               //update an existing record rather than keep re-creating new ones
-              // in the edit column need to add oz input if we change the category to hydration
+              
 
             let httpRequest = 
             {
