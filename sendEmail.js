@@ -25,7 +25,7 @@ exports.sendVerification = async function (email, uniqueString) {
         html: "<h1>Welcome to the Health-n-Wellness App!</h1><b>Please click on the link to verify your account <a href=" + pathBuilder.buildPath(apiRoute) + "> here </a></b></b>", // html body
     });
 
-    console.log("<emailer> Verification message sent to email: %s : uniqueString: %s", email, uniqueString);
+    console.log("<emailer> Verification message sent to email: %s : uniqueString: %s : messageId: %s", email, uniqueString, info.messageId);
 }
 
 exports.sendResetRequest = async function (email, uniqueString) {
@@ -50,7 +50,7 @@ exports.sendResetRequest = async function (email, uniqueString) {
         html: "<h1>Health-n-Wellness Password Reset Request!</h1><b>Please click on the link to verify your account <a href=" + pathBuilder.buildPath(apiRoute) + "> here </a></b></b>", // html body
     });
 
-    console.log("<emailer> Reset request message sent to email: %s : uniqueString: %s", email, uniqueString);
+    console.log("<emailer> Reset request message sent to email: %s : uniqueString: %s : message.Id: %s", email, uniqueString, info.messageId);
 }
 
 exports.testEmail = async function (email) {

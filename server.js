@@ -25,6 +25,8 @@ var token = require('./createJWT.js');
 // sending emails
 var emailer = require('./sendEmail.js');
 const e = require('express');
+const { type } = require('os');
+const { query } = require('express');
 
 // Incoming: userName, email
 // Outgoing: user (singular)
@@ -679,6 +681,7 @@ app.post('/api/register', async (req, res, next) => {
 // Outgoing: id, firstName, lastName, email, error
 // Purpose: login for user, validates user's inputted login/password data
 app.post('/api/login', async (req, res, next) => {
+
     const { login, password } = req.body;
     var error = '';
 
@@ -734,12 +737,119 @@ app.post('/api/login', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
+// Incoming: none
+// Outgoing: current time HH:MM (string format)
+async function getCurrentTime() {
+    let date_ob = new Date();
+
+    var hours = date_ob.getHours();
+    var minutes = date_ob.getMinutes();
+
+    var currentTime = (
+        ('0' + hours).slice(-2) +
+        ":" +
+        ('0' + minutes).slice(-2)
+    ).toString().trim();
+
+    // debug: check current time
+    // console.log(currentTime);
+
+    return currentTime;
+}
+
+// Incoming: none
+// Outgoing: current day [monday - sunday] (string format)
+async function getCurrentDay() {
+    let date_ob = new Date();
+
+    // Sunday - Saturday : 0 - 6
+    var day = date_ob.getDay();
+    var stringDay = '';
+
+    if (day == 0)
+        stringDay = 'sunday';
+
+    else if (day == 1)
+        stringDay = 'monday';
+
+    else if (day == 2)
+        stringDay = 'tuesday';
+
+    else if (day == 3)
+        stringDay = 'wednesday';
+
+    else if (day == 4)
+        stringDay = 'thursday';
+
+    else if (day == 5)
+        stringDay = 'friday';
+
+    else
+        stringDay = 'saturday';
+
+    // debug: check current time
+    // console.log(stringDay + " " + typeof (stringDay));
+
+    return stringDay;
+}
+
+// Incoming: userId
+// Outgoing: all user Alarms[] scheduled to run at current time
+// Purpose: provides a JSON array of all the alarms that is associated to userId value 
+app.post('/api/getAllUserScheduledAlarms', async (req, res, next) => {
+    const { userId } = req.body;
+    var error = '';
+
+    // returns a string format of the current time GMT-0400 in HH:MM format
+    var currentTime = await getCurrentTime();
+
+    // returns a string format of the current day (monday, tuesday, etc..)
+    var currentDay = await getCurrentDay();
+    query[currentDay] = true;
+
+    const db = client.db();
+    const alarmResults = await db.collection('alarms').find({
+        $and: [
+            { "userId": userId },
+            { "time": { $regex: currentTime + '.*', $options: 'r' } },
+            { query }
+        ]
+    }).toArray();
+
+    var _retAlarms = [];
+
+    if (alarmResults.length > 0) {
+        for (var i = 0; i < alarmResults.length; i++) {
+            // get the item associated with the alarm
+            var _item = await getItemUsingObjId(alarmResults[i].itemId);
+
+            _retAlarms.push({
+                userId: alarmResults[i].userId,
+                item: _item.item,
+                time: alarmResults[i].time
+            });
+        }
+    }
+
+    else {
+        error = 'No records found';
+    }
+
+    var ret = {
+        Alarms: _retAlarms,
+        error: error
+    }
+
+    res.status(200).json(ret);
+});
+
 // Incoming: userId
 // Outgoing: all user Alarms[] w/ userId
 // Purpose: provides a JSON array of all the alarms that is associated to userId value
 app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
     const { userId, jwtToken } = req.body;
+    var error = '';
 
     // validate time remaining of JWT
     try {
@@ -771,7 +881,6 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
                 _id: alarmResults[i]._id,
                 userId: alarmResults[i].userId,
                 itemId: alarmResults[i].itemId,
-                date: alarmResults[i].date,
                 time: alarmResults[i].time,
                 monday: alarmResults[i].monday,
                 tuesday: alarmResults[i].tuesday,
@@ -794,7 +903,7 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
         var ret = {
             Alarms: _retAlarms,
-            error: " ",
+            error: error,
             jwtToken: refreshedToken
         };
 
@@ -802,21 +911,23 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
     }
 
     else {
+        error = "No records found";
+
         var ret = {
             results: _ret,
-            error: "No records found"
+            error: error
         };
 
         res.status(200).json(ret);
     }
 });
 
-// Incoming: userId, weight, date, desiredWeight
-// Outgoing: userId, weight, date, desiredWeight, error
-// Purpose: adds a new weight and desiredWeight input to the database
-app.post('/api/addWeight', async (req, res, next) => {
+// Incoming: userId
+// Outgoing: numberHy
+// Purpose: provides a total count of hydration items of userId
+app.post('/api/numberOfHy', async (req, res, next) => {
 
-    const { userId, weight, date, desiredWeight, jwtToken } = req.body;
+    const { userId, jwtToken } = req.body;
     var error = '';
 
     // validate time remaining of JWT
@@ -835,19 +946,230 @@ app.post('/api/addWeight', async (req, res, next) => {
         console.log(e.message);
     }
 
-    const newWeight = {
-        userId: userId,
-        weight: weight,
-        date: date,
-        desiredWeight: desiredWeight
+    try {
+        const db = client.db();
+        var numberHy = await db.collection('items').countDocuments(
+            {
+                $and: [
+                    { "userId": userId },
+                    { "hy": true },
+                    { "workout": false },
+                    { "rx": false },
+                ]
+            }
+        );
+
+    } catch (e) {
+        error = e.message;
+        console.log('<numberOfHy> Error: ' + e.message);
+    }
+
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    var ret = {
+        numberHy: numberHy,
+        error: error,
+        jwtToken: refreshedToken
+
+    }
+
+    res.status(200).json(ret);
+});
+
+// Incoming: userId
+// Outgoing: numberHy
+// Purpose: provides a total count of workout items of userId
+app.post('/api/numberOfWorkout', async (req, res, next) => {
+
+    const { userId, jwtToken } = req.body;
+    var error = '';
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
     }
 
     try {
         const db = client.db();
-        db.collection('weights').insertOne(newWeight);
+        var numberWorkout = await db.collection('items').countDocuments(
+            {
+                $and: [
+                    { "userId": userId },
+                    { "hy": false },
+                    { "workout": true },
+                    { "rx": false },
+                ]
+            }
+        );
 
     } catch (e) {
-        error = e.toString();
+        error = e.message;
+        console.log('<numberOfWorkout> Error: ' + e.message);
+    }
+
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    var ret = {
+        numberWorkout: numberWorkout,
+        error: error,
+        jwtToken: refreshedToken
+
+    }
+
+    res.status(200).json(ret);
+});
+
+// Incoming: userId
+// Outgoing: numberHy
+// Purpose: provides a total count of rx items of userId
+app.post('/api/numberOfRx', async (req, res, next) => {
+
+    const { userId, jwtToken } = req.body;
+    var error = '';
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    try {
+        const db = client.db();
+        var numberRx = await db.collection('items').countDocuments(
+            {
+                $and: [
+                    { "userId": userId },
+                    { "hy": false },
+                    { "workout": false },
+                    { "rx": true },
+                ]
+            }
+        );
+
+    } catch (e) {
+        error = e.message;
+        console.log('<numberOfRx> Error: ' + e.message);
+    }
+
+    // refresh JWT
+    var refreshedToken = null;
+
+    try {
+        refreshedToken = token.refresh(jwtToken);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    var ret = {
+        numberRx: numberRx,
+        error: error,
+        jwtToken: refreshedToken
+
+    }
+
+    res.status(200).json(ret);
+});
+
+// Incoming: userId, weight, date, desiredWeight
+// Outgoing: userId, weight, date, desiredWeight, error
+// Purpose: adds/updates the weight and desiredWeight input to the database
+app.post('/api/addWeight', async (req, res, next) => {
+
+    const { userId, weight, desiredWeight, jwtToken } = req.body;
+    var error = '';
+
+    // validate time remaining of JWT
+    try {
+        if (token.isExpired(jwtToken)) {
+            var r = {
+                error: 'The JWT is no longer valid',
+                jwtToken: ''
+            };
+
+            res.status(200).json(r);
+            return;
+        }
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    // check if the user has an existing weight input 
+    const db = client.db();
+    var sizeOfWeightCollection = await db.collection('weights').countDocuments(
+        { "userId": userId }
+    );
+
+    // no existing weight
+    if (sizeOfWeightCollection <= 0) {
+        try {
+            const newWeight = {
+                userId: userId,
+                weight: weight,
+                desiredWeight: desiredWeight
+            }
+
+            db.collection('weights').insertOne(newWeight);
+
+        } catch (e) {
+            error = e.toString();
+        }
+    }
+
+    // user has an existing weight, then we update the existing weight
+    else {
+        try {
+            db.collection('weights').updateOne(
+                { "userId": userId },
+                {
+                    $set:
+                    {
+                        "weight": weight,
+                        "desiredWeight": desiredWeight,
+                    }
+                }
+            );
+        } catch (e) {
+            error = e.toString();
+        }
     }
 
     // refresh JWT
@@ -863,7 +1185,6 @@ app.post('/api/addWeight', async (req, res, next) => {
     var ret = {
         userId: userId,
         weight: weight,
-        date: date,
         desiredWeight: desiredWeight,
         error: error,
         jwtToken: refreshedToken
