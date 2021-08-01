@@ -678,7 +678,9 @@ app.post('/api/register', async (req, res, next) => {
 });
 
 // Incoming: login, password
-// Outgoing: id, firstName, lastName, email, error
+// Outgoing: id, firstName, lastName, email, 
+//           numberHy, numberWorkout, numberRx, 
+//           weight, desiredWeight, currentWeightDifferenceFromGoal, error
 // Purpose: login for user, validates user's inputted login/password data
 app.post('/api/login', async (req, res, next) => {
 
@@ -694,12 +696,32 @@ app.post('/api/login', async (req, res, next) => {
     var fn = '';
     var ln = '';
     var email = '';
+    var weight = 0;
+    var desiredWeight = 0;
+    var currentWeightDifferenceFromGoal = 0;
 
     if (results.length > 0) {
+        // get user's credentials
         id = results[0].userId;
         fn = results[0].firstName;
         ln = results[0].lastName;
         email = results[0].email;
+
+        // get user's count: hy, workout, and rx
+        var numberHy = await countOfHy(id);
+        var numberWorkout = await countOfWorkout(id);
+        var numberRx = await countOfRx(id);
+
+        // get user's weight, desiredWeight, and currentWeightDifferenceFromGoal
+        const weightObj = await db.collection('weights').findOne(
+            { "userId": id }
+        )
+
+        if (weightObj) {
+            weight = weightObj.weight;
+            desiredWeight = weightObj.desiredWeight;
+            currentWeightDifferenceFromGoal = Math.abs(desiredWeight - weight);
+        }
 
         try {
             const token = require("./createJWT.js");
@@ -710,12 +732,18 @@ app.post('/api/login', async (req, res, next) => {
                 firstName: fn,
                 lastName: ln,
                 email: email,
+                numberHy: numberHy,
+                numberWorkout: numberWorkout,
+                numberRx: numberRx,
+                weight: weight,
+                desiredWeight: desiredWeight,
+                currentWeightDifferenceFromGoal: currentWeightDifferenceFromGoal,
                 error: '',
                 jwtToken
             };
 
             // Debug: delete me!
-            emailer.testEmail(email);
+            // emailer.testEmail(email);
         }
         catch (e) {
             ret = {
@@ -730,6 +758,12 @@ app.post('/api/login', async (req, res, next) => {
             firstName: fn,
             lastName: ln,
             email: email,
+            numberHy: 0,
+            numberWorkout: 0,
+            numberRx: 0,
+            weight: weight,
+            desiredWeight: desiredWeight,
+            currentWeightDifferenceFromGoal: currentWeightDifferenceFromGoal,
             error: 'Invalid Username/Password'
         };
     }
@@ -923,6 +957,25 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
 });
 
 // Incoming: userId
+// Outgoing: numberRx
+async function countOfHy(userId) {
+
+    const db = client.db();
+    var numberHy = await db.collection('items').countDocuments(
+        {
+            $and: [
+                { "userId": userId },
+                { "hy": true },
+                { "workout": false },
+                { "rx": false },
+            ]
+        }
+    );
+
+    return numberHy;
+}
+
+// Incoming: userId
 // Outgoing: numberHy
 // Purpose: provides a total count of hydration items of userId
 app.post('/api/numberOfHy', async (req, res, next) => {
@@ -947,18 +1000,7 @@ app.post('/api/numberOfHy', async (req, res, next) => {
     }
 
     try {
-        const db = client.db();
-        var numberHy = await db.collection('items').countDocuments(
-            {
-                $and: [
-                    { "userId": userId },
-                    { "hy": true },
-                    { "workout": false },
-                    { "rx": false },
-                ]
-            }
-        );
-
+        var numberHy = await countOfHy(userId);
     } catch (e) {
         error = e.message;
         console.log('<numberOfHy> Error: ' + e.message);
@@ -985,6 +1027,25 @@ app.post('/api/numberOfHy', async (req, res, next) => {
 });
 
 // Incoming: userId
+// Outgoing: numberRx
+async function countOfWorkout(userId) {
+
+    const db = client.db();
+    var numberWorkout = await db.collection('items').countDocuments(
+        {
+            $and: [
+                { "userId": userId },
+                { "hy": false },
+                { "workout": true },
+                { "rx": false },
+            ]
+        }
+    );
+
+    return numberWorkout;
+}
+
+// Incoming: userId
 // Outgoing: numberHy
 // Purpose: provides a total count of workout items of userId
 app.post('/api/numberOfWorkout', async (req, res, next) => {
@@ -1009,18 +1070,7 @@ app.post('/api/numberOfWorkout', async (req, res, next) => {
     }
 
     try {
-        const db = client.db();
-        var numberWorkout = await db.collection('items').countDocuments(
-            {
-                $and: [
-                    { "userId": userId },
-                    { "hy": false },
-                    { "workout": true },
-                    { "rx": false },
-                ]
-            }
-        );
-
+        var numberWorkout = await countOfWorkout(userId);
     } catch (e) {
         error = e.message;
         console.log('<numberOfWorkout> Error: ' + e.message);
@@ -1047,7 +1097,26 @@ app.post('/api/numberOfWorkout', async (req, res, next) => {
 });
 
 // Incoming: userId
-// Outgoing: numberHy
+// Outgoing: numberRx
+async function countOfRx(userId) {
+
+    const db = client.db();
+    var numberRx = await db.collection('items').countDocuments(
+        {
+            $and: [
+                { "userId": userId },
+                { "hy": false },
+                { "workout": false },
+                { "rx": true },
+            ]
+        }
+    );
+
+    return numberRx;
+}
+
+// Incoming: userId
+// Outgoing: numberRx 
 // Purpose: provides a total count of rx items of userId
 app.post('/api/numberOfRx', async (req, res, next) => {
 
@@ -1071,18 +1140,7 @@ app.post('/api/numberOfRx', async (req, res, next) => {
     }
 
     try {
-        const db = client.db();
-        var numberRx = await db.collection('items').countDocuments(
-            {
-                $and: [
-                    { "userId": userId },
-                    { "hy": false },
-                    { "workout": false },
-                    { "rx": true },
-                ]
-            }
-        );
-
+        var numberRx = await countOfRx(userId);
     } catch (e) {
         error = e.message;
         console.log('<numberOfRx> Error: ' + e.message);
@@ -1108,8 +1166,8 @@ app.post('/api/numberOfRx', async (req, res, next) => {
     res.status(200).json(ret);
 });
 
-// Incoming: userId, weight, date, desiredWeight
-// Outgoing: userId, weight, date, desiredWeight, error
+// Incoming: userId, weight, desiredWeight
+// Outgoing: userId, weight, desiredWeight, error
 // Purpose: adds/updates the weight and desiredWeight input to the database
 app.post('/api/addWeight', async (req, res, next) => {
 
@@ -1192,7 +1250,6 @@ app.post('/api/addWeight', async (req, res, next) => {
 
     res.status(200).json(ret);
 });
-
 
 async function calculateWeightDifferenceFromGoal(arrayOfWeight) {
     return Math.abs(arrayOfWeight[0].desiredWeight - arrayOfWeight[0].weight);
