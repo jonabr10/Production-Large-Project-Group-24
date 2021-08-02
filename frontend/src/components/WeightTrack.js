@@ -19,6 +19,7 @@ class WeightTrack extends Component
 
         localStorage.setItem('weight', this.props.userData.weight.toString()); 
         localStorage.setItem('desired_weight', this.props.userData.desiredWeight.toString()); 
+        localStorage.setItem('starting_weight', this.props.userData.startingWeight.toString()); 
     }
 
     handleInputChange = ({ target }) => 
@@ -30,14 +31,15 @@ class WeightTrack extends Component
     {
         if (this.isStartingWeightValid())
         {
-            /*let pathBuilder = require('../Path');
+            let pathBuilder = require('../Path');
             let tokenStorage = require('../tokenStorage');
     
             let addWeightPayload = 
             {
                 userId: this.props.userData.id,
-                weight: parseInt(this.state.currentWeight),
+                weight: this.getWeight(),
                 desiredWeight: this.getDesiredWeight(),
+                startingWeight: parseInt(this.state.startingWeight),
                 jwtToken: tokenStorage.retrieveToken()
             } 
 
@@ -57,15 +59,15 @@ class WeightTrack extends Component
                 if (responseData.error.length === 0)
                 {
                     tokenStorage.storeToken(responseData.jwtToken);
-                    this.clearCurrentWeightField();
-                    this.updateWeight(addWeightPayload.weight);
-                    this.showNotification('success', 'Successfully updated weight!');
+                    this.clearEditFields();
+                    this.updateStartingWeight(addWeightPayload.startingWeight);
+                    this.showNotification('success', 'Successfully updated starting weight!');
                 }
                 else
                 {
                     this.showNotification('error', responseData.error);
                 }
-            });*/
+            });
         }
     }
 
@@ -161,6 +163,7 @@ class WeightTrack extends Component
                 userId: this.props.userData.id,
                 weight: parseInt(this.state.currentWeight),
                 desiredWeight: this.getDesiredWeight(),
+                startingWeight: this.getStartingWeight(),
                 jwtToken: tokenStorage.retrieveToken()
             } 
 
@@ -204,6 +207,7 @@ class WeightTrack extends Component
                 userId: this.props.userData.id,
                 weight: this.getWeight(),
                 desiredWeight: parseInt(this.state.desiredWeight),
+                startingWeight: this.getStartingWeight(),
                 jwtToken: tokenStorage.retrieveToken()
             }  
 
@@ -270,9 +274,9 @@ class WeightTrack extends Component
         return response;
     }
 
-    getStartingWeight = () => 
+    getStartingWeightRender = () => 
     {
-        //let records = parseInt(localStorage.getItem('starting_weight'));
+        let records = this.getStartingWeight();
 
         if (this.state.isEditing)
         {
@@ -305,7 +309,7 @@ class WeightTrack extends Component
         {
             const element = (
                 <div>
-                    <Statistic title="Starting weight" value={10} /> 
+                    <Statistic title="Starting weight" value={records} /> 
                     <a 
                     href="javascript:;"
                     onClick={ () => this.startEditing() }
@@ -317,6 +321,13 @@ class WeightTrack extends Component
             
             return element;
         } 
+    }
+
+    getStartingWeight = () => 
+    {
+        let records = parseInt(localStorage.getItem('starting_weight'));
+        
+        return records;
     }
 
     getWeight = () => 
@@ -331,6 +342,12 @@ class WeightTrack extends Component
         let records = parseInt(localStorage.getItem('desired_weight'));
         
         return records;
+    }
+
+    updateStartingWeight = (newWeight) => 
+    {      
+        localStorage.setItem('starting_weight', newWeight.toString());
+        this.setState(this.state);
     }
 
     updateWeight = (newWeight) => 
@@ -384,7 +401,7 @@ class WeightTrack extends Component
 
     render()
     {
-        const startingWeight = this.getStartingWeight();
+        const startingWeight = this.getStartingWeightRender();
         const currentWeight = this.getWeight();
         const desiredWeight = this.getDesiredWeight();
         const goalPercentage = Math.round((currentWeight / desiredWeight) * 100);

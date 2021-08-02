@@ -59,7 +59,8 @@ export default class Login extends Component
                         numberRx: responseData.numberRx,
                         weight: responseData.weight,
                         desiredWeight: responseData.desiredWeight,
-                        currentWeightDifferenceFromGoal: responseData.currentWeightDifferenceFromGoal
+                        currentWeightDifferenceFromGoal: responseData.currentWeightDifferenceFromGoal,
+                        startingWeight: responseData.startingWeight
                     }
 
                     tokenStorage.storeToken(responseData.jwtToken);
