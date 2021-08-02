@@ -12,7 +12,9 @@ class WeightTrack extends Component
         this.state = 
         {
             currentWeight: 0,
-            desiredWeight: 0
+            desiredWeight: 0,
+            startingWeight: 0,
+            isEditing: false
         }
 
         localStorage.setItem('weight', this.props.userData.weight.toString()); 
@@ -22,6 +24,69 @@ class WeightTrack extends Component
     handleInputChange = ({ target }) => 
     {
         this.setState({ [target.name]: target.value });
+    }
+
+    createStartingWeight = () =>
+    {
+        if (this.isStartingWeightValid())
+        {
+            /*let pathBuilder = require('../Path');
+            let tokenStorage = require('../tokenStorage');
+    
+            let addWeightPayload = 
+            {
+                userId: this.props.userData.id,
+                weight: parseInt(this.state.currentWeight),
+                desiredWeight: this.getDesiredWeight(),
+                jwtToken: tokenStorage.retrieveToken()
+            } 
+
+            let httpRequest = 
+            {
+                method: 'post',
+                body: JSON.stringify(addWeightPayload),
+                headers: {'Content-Type': 'application/json; charset=utf-8'}
+            }
+            
+            fetch(pathBuilder.buildPath('api/addWeight'), httpRequest)
+            .then(this.checkResponse)
+            .catch(function(error) { console.log(error); })
+            .then(response => response.json())
+            .then(responseData =>
+            {
+                if (responseData.error.length === 0)
+                {
+                    tokenStorage.storeToken(responseData.jwtToken);
+                    this.clearCurrentWeightField();
+                    this.updateWeight(addWeightPayload.weight);
+                    this.showNotification('success', 'Successfully updated weight!');
+                }
+                else
+                {
+                    this.showNotification('error', responseData.error);
+                }
+            });*/
+        }
+    }
+
+    isStartingWeightValid = () => 
+    {
+        let validFlag = true;
+
+        if (this.state.startingWeight <= 0)
+        {
+            const element = <Alert message= "Please input a valid weight" banner />;
+            ReactDOM.render(element, document.getElementById('invalidStartingWeightAlert'));
+
+            validFlag = false;
+        }
+        else
+        {
+            const element = '';
+            ReactDOM.render(element, document.getElementById('invalidStartingWeightAlert'));
+        }
+        
+        return validFlag;
     }
 
     isCurrentWeightValid = () => 
@@ -205,6 +270,55 @@ class WeightTrack extends Component
         return response;
     }
 
+    getStartingWeight = () => 
+    {
+        //let records = parseInt(localStorage.getItem('starting_weight'));
+
+        if (this.state.isEditing)
+        {
+            const element = (
+                <div>
+                    <label>Update starting weight</label>
+                    <input type="number" id="startingWeight" name="startingWeight" className="form-control" placeholder="Starting weight (lb)" min="0" onChange={this.handleInputChange} />
+
+                    <a 
+                    href="javascript:;"
+                    onClick={ () => this.createStartingWeight() }
+                    className="save-cancel-button"
+                    >
+                        Save
+                    </a>
+
+                    <a 
+                    href="javascript:;"
+                    onClick={ () => this.stopEditing() }
+                    className="save-cancel-button"
+                    >
+                        Cancel
+                    </a>
+                    <div id="invalidStartingWeightAlert"></div>
+                </div>);
+            
+            return element;
+        }
+        else
+        {
+            const element = (
+                <div>
+                    <Statistic title="Starting weight" value={10} /> 
+                    <a 
+                    href="javascript:;"
+                    onClick={ () => this.startEditing() }
+                    className="weight-edit-button"
+                    >
+                    Edit
+                    </a>
+                </div>);
+            
+            return element;
+        } 
+    }
+
     getWeight = () => 
     {
         let records = parseInt(localStorage.getItem('weight'));
@@ -236,8 +350,41 @@ class WeightTrack extends Component
         
     }
 
+    setEditing = (isEditing) => 
+    {
+        this.setState({ isEditing: isEditing });
+    }
+
+    startEditing = () => 
+    {
+        if (this.state.isEditing)
+        {
+            this.stopEditing();
+        }
+
+        this.setEditing(true);
+    }
+
+    stopEditing = () => 
+    {
+        this.setEditing(false);
+        this.clearEditFields();
+    }
+
+    clearEditFields = () =>
+    {
+        let weightRef =  document.getElementById('startingWeight');
+        if (weightRef != null) weightRef.value = '';
+        
+        this.setState
+        ({ 
+            startingWeight: ''
+        });
+    }
+
     render()
     {
+        const startingWeight = this.getStartingWeight();
         const currentWeight = this.getWeight();
         const desiredWeight = this.getDesiredWeight();
         const goalPercentage = Math.round((currentWeight / desiredWeight) * 100);
@@ -255,7 +402,7 @@ class WeightTrack extends Component
                         <div className="form-group">
                             <label>Update current weight</label>
                             <input type="number" id="currentWeight" name="currentWeight" className="form-control" placeholder="Current weight (lb)" min="0" onChange={this.handleInputChange} />
-
+            
                             <br></br>
 
                             <Button type="default" shape="square" size="small" icon={<DashboardOutlined />} onClick={() => { this.createCurrentWeight(); }}> Create current weight </Button>
@@ -277,12 +424,12 @@ class WeightTrack extends Component
                 <div class="float-right">
                     <div class="inner">
                         <div>
-                            <p>Weight goal progress</p>
-                            <Progress type="circle" percent={goalPercentage} />
+                            <p>Weight goal progress to {desiredWeight} lbs</p>
+                            <Progress type="circle" percent={goalPercentage} width={90} />
                         </div>
                         <Divider></Divider>
                         <div>
-                            <Statistic title="Current weight" value={currentWeight} />
+                            {startingWeight}
                         </div>
                     </div>
                 </div>

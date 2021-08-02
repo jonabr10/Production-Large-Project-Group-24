@@ -98,3 +98,7 @@ table{
 .pass-reset {
     margin-top: 250px;
 }
+
+.weight-edit-button {
+    margin-right: -1px;
+}
