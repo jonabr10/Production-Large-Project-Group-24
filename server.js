@@ -697,6 +697,7 @@ app.post('/api/login', async (req, res, next) => {
     var ln = '';
     var email = '';
     var weight = 0;
+    var startingWeight = 0;
     var desiredWeight = 0;
     var currentWeightDifferenceFromGoal = 0;
 
@@ -719,6 +720,7 @@ app.post('/api/login', async (req, res, next) => {
 
         if (weightObj) {
             weight = weightObj.weight;
+            startingWeight = weightObj.startingWeight;
             desiredWeight = weightObj.desiredWeight;
             currentWeightDifferenceFromGoal = Math.abs(desiredWeight - weight);
         }
@@ -736,6 +738,7 @@ app.post('/api/login', async (req, res, next) => {
                 numberWorkout: numberWorkout,
                 numberRx: numberRx,
                 weight: weight,
+                startingWeight: startingWeight,
                 desiredWeight: desiredWeight,
                 currentWeightDifferenceFromGoal: currentWeightDifferenceFromGoal,
                 error: '',
@@ -762,6 +765,7 @@ app.post('/api/login', async (req, res, next) => {
             numberWorkout: 0,
             numberRx: 0,
             weight: weight,
+            startingWeight: startingWeight,
             desiredWeight: desiredWeight,
             currentWeightDifferenceFromGoal: currentWeightDifferenceFromGoal,
             error: 'Invalid Username/Password'
