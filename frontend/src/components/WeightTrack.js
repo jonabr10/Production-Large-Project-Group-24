@@ -14,6 +14,9 @@ class WeightTrack extends Component
             currentWeight: 0,
             desiredWeight: 0
         }
+
+        localStorage.setItem('weight', this.props.userData.weight.toString()); 
+        localStorage.setItem('desired_weight', this.props.userData.desiredWeight.toString()); 
     }
 
     handleInputChange = ({ target }) => 
@@ -92,7 +95,7 @@ class WeightTrack extends Component
             {
                 userId: this.props.userData.id,
                 weight: parseInt(this.state.currentWeight),
-                desiredWeight: parseInt(this.state.desiredWeight),
+                desiredWeight: this.getDesiredWeight(),
                 jwtToken: tokenStorage.retrieveToken()
             } 
 
@@ -113,6 +116,7 @@ class WeightTrack extends Component
                 {
                     tokenStorage.storeToken(responseData.jwtToken);
                     this.clearCurrentWeightField();
+                    this.updateWeight(addWeightPayload.weight);
                     this.showNotification('success', 'Successfully updated weight!');
                 }
                 else
@@ -133,7 +137,7 @@ class WeightTrack extends Component
             let addWeightPayload = 
             {
                 userId: this.props.userData.id,
-                weight: parseInt(this.state.currentWeight),
+                weight: this.getWeight(),
                 desiredWeight: parseInt(this.state.desiredWeight),
                 jwtToken: tokenStorage.retrieveToken()
             }  
@@ -155,6 +159,7 @@ class WeightTrack extends Component
                 {
                     tokenStorage.storeToken(responseData.jwtToken);
                     this.clearDesiredWeightField();
+                    this.updateDesiredWeight(addWeightPayload.desiredWeight);
                     this.showNotification('success', 'Successfully updated weight goal!');
                 }
                 else
@@ -200,8 +205,43 @@ class WeightTrack extends Component
         return response;
     }
 
+    getWeight = () => 
+    {
+        let records = parseInt(localStorage.getItem('weight'));
+        
+        return records;
+    }
+
+    getDesiredWeight = () => 
+    {
+        let records = parseInt(localStorage.getItem('desired_weight'));
+        
+        return records;
+    }
+
+    updateWeight = (newWeight) => 
+    {      
+        localStorage.setItem('weight', newWeight.toString());
+        this.setState(this.state);
+    }
+
+    updateDesiredWeight = (newWeight) => 
+    {
+        localStorage.setItem('desired_weight', newWeight.toString());
+        this.setState(this.state);
+    }
+    
+    getPercentageDifference = (currentWeight, desiredWeight) => 
+    {
+        
+    }
+
     render()
     {
+        const currentWeight = this.getWeight();
+        const desiredWeight = this.getDesiredWeight();
+        const goalPercentage = Math.round((currentWeight / desiredWeight) * 100);
+        
         return (
             <div class="grid-container">   
                 <div>
@@ -238,11 +278,11 @@ class WeightTrack extends Component
                     <div class="inner">
                         <div>
                             <p>Weight goal progress</p>
-                            <Progress type="circle" percent={75} />
+                            <Progress type="circle" percent={goalPercentage} />
                         </div>
                         <Divider></Divider>
                         <div>
-                            <Statistic title="Current weight" value={112893} />
+                            <Statistic title="Current weight" value={currentWeight} />
                         </div>
                     </div>
                 </div>
