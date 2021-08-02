@@ -345,7 +345,7 @@ class WeightTrack extends Component
         this.setState(this.state);
     }
     
-    getPercentageDifference = (currentWeight, desiredWeight) => 
+    getPercentageDifference = (startingWeight, currentWeight, desiredWeight) => 
     {
         
     }
