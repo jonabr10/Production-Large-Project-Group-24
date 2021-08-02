@@ -23,6 +23,8 @@ class Hydration extends Component
             selectedTime: null,
             waterAmount: 0
         }
+
+        localStorage.setItem('hydration_records', this.props.userData.numberHy.toString()); 
     }
 
     handleInputChange = ({ target }) => 
@@ -91,6 +93,7 @@ class Hydration extends Component
                 {
                     tokenStorage.storeToken(responseData.jwtToken);
                     this.clearAllFields();
+                    this.addARecord();
                     this.showNotification('success', 'Successfully created alarm!');
                 }
                 else
@@ -192,6 +195,23 @@ class Hydration extends Component
             this.state.days.length > 0;
     }
 
+    getRecords = () => 
+    {
+        let records = parseInt(localStorage.getItem('hydration_records'));
+        
+        return records;
+    }
+
+    addARecord = () => 
+    {
+        let records = parseInt(localStorage.getItem('hydration_records'));
+        
+        records++;
+
+        localStorage.setItem('hydration_records', records.toString());
+        this.setState(this.state);
+    }
+
     render()
     {
         const { Option } = Select;
@@ -204,6 +224,8 @@ class Hydration extends Component
         daysOfWeek.push(<Option key={"friday"}>{"Friday"}</Option>);
         daysOfWeek.push(<Option key={"saturday"}>{"Saturday"}</Option>);
         daysOfWeek.push(<Option key={"sunday"}>{"Sunday"}</Option>);
+
+        const numberOfHydrationAlarms = this.getRecords();
 
         return (
             <div class="grid-container">   
@@ -242,7 +264,7 @@ class Hydration extends Component
                 <div class="float-right">
                     <div class="inner">
                         <div>
-                            <Statistic title="Hydration alarms you have set" value={112893} />
+                            <Statistic title="Hydration alarms you have set" value={numberOfHydrationAlarms} />
                         </div>
 
                         <img src={image} height="47%" width="47%"/>

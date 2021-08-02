@@ -53,7 +53,13 @@ export default class Login extends Component
                         id: responseData.id,
                         firstName: responseData.firstName,
                         lastName: responseData.lastName,
-                        email: responseData.email
+                        email: responseData.email,
+                        numberHy: responseData.numberHy,
+                        numberWorkout: responseData.numberWorkout,
+                        numberRx: responseData.numberRx,
+                        weight: responseData.weight,
+                        desiredWeight: responseData.desiredWeight,
+                        currentWeightDifferenceFromGoal: responseData.currentWeightDifferenceFromGoal
                     }
 
                     tokenStorage.storeToken(responseData.jwtToken);

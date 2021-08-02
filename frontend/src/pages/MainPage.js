@@ -19,7 +19,7 @@ const MainPage = () =>
     {
         window.location.href = '/sign-in';
     }
-
+    
     userData = JSON.parse(userData);
     
     return (

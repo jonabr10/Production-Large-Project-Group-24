@@ -22,6 +22,8 @@ class Workouts extends Component
             selectedDays: [],
             selectedTime: null
         }
+
+        localStorage.setItem('workout_records', this.props.userData.numberWorkout.toString());
     }
 
     handleInputChange = ({ target }) => 
@@ -85,6 +87,7 @@ class Workouts extends Component
                 {
                     tokenStorage.storeToken(responseData.jwtToken);
                     this.clearAllFields();
+                    this.addARecord();
                     this.showNotification('success', 'Successfully created alarm!');
                 }
                 else
@@ -184,6 +187,23 @@ class Workouts extends Component
             this.state.days.length > 0;
     }
 
+    getRecords = () => 
+    {
+        let records = parseInt(localStorage.getItem('workout_records'));
+        
+        return records;
+    }
+
+    addARecord = () => 
+    {
+        let records = parseInt(localStorage.getItem('workout_records'));
+        
+        records++;
+
+        localStorage.setItem('workout_records', records.toString());
+        this.setState(this.state);
+    }
+
     render()
     {
         const { Option } = Select;
@@ -196,6 +216,8 @@ class Workouts extends Component
         daysOfWeek.push(<Option key={"friday"}>{"Friday"}</Option>);
         daysOfWeek.push(<Option key={"saturday"}>{"Saturday"}</Option>);
         daysOfWeek.push(<Option key={"sunday"}>{"Sunday"}</Option>);
+
+        const numberOfWorkoutAlarms = this.getRecords();
 
         return (
             <div class="grid-container">   
@@ -233,7 +255,7 @@ class Workouts extends Component
                 <div class="float-right">
                     <div class="inner">
                         <div>
-                            <Statistic title="Workout alarms you have set" value={112893} />
+                            <Statistic title="Workout alarms you have set" value={numberOfWorkoutAlarms} />
                         </div>
 
                         <img src={image} height="47%" width="47%"/>
