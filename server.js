@@ -1171,7 +1171,7 @@ app.post('/api/numberOfRx', async (req, res, next) => {
 // Purpose: adds/updates the weight and desiredWeight input to the database
 app.post('/api/addWeight', async (req, res, next) => {
 
-    const { userId, weight, desiredWeight, jwtToken } = req.body;
+    const { userId, weight, startingWeight, desiredWeight, jwtToken } = req.body;
     var error = '';
 
     // validate time remaining of JWT
@@ -1202,6 +1202,7 @@ app.post('/api/addWeight', async (req, res, next) => {
             const newWeight = {
                 userId: userId,
                 weight: weight,
+                startingWeight: startingWeight,
                 desiredWeight: desiredWeight
             }
 
@@ -1221,6 +1222,7 @@ app.post('/api/addWeight', async (req, res, next) => {
                     $set:
                     {
                         "weight": weight,
+                        "startingWeight": startingWeight,
                         "desiredWeight": desiredWeight,
                     }
                 }
@@ -1243,6 +1245,7 @@ app.post('/api/addWeight', async (req, res, next) => {
     var ret = {
         userId: userId,
         weight: weight,
+        startingWeight: startingWeight,
         desiredWeight: desiredWeight,
         error: error,
         jwtToken: refreshedToken
@@ -1303,6 +1306,8 @@ app.post('/api/outputWeight', async (req, res, next) => {
     if (sizeOfWeightCollection <= 0) {
         var ret = {
             userId: userId,
+            weight: 0,
+            startingWeight: 0,
             desiredWeight: 0,
             currentWeightDifferenceFromGoal: 0,
             percentageFromWeightGoal: 0,
@@ -1332,6 +1337,8 @@ app.post('/api/outputWeight', async (req, res, next) => {
 
         var ret = {
             userId: userId,
+            weight: arrayOfWeight[0].weight,
+            startingWeight: arrayOfWeight[0].startingWeight,
             currentdesiredWeight: arrayOfWeight[0].desiredWeight,
             currentWeightDifferenceFromGoal: weightDiffFromGoal,
             percentageOfWeightChange: percentageOfWeightChange,
