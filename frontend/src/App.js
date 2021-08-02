@@ -7,6 +7,7 @@ import './antd-with-bootstrap.css'
 
 import LoginSignupPage from "./pages/LoginSignupPage";
 import MainPage from "./pages/MainPage";
+import PassReset from "./components/PassReset";
 
 function App() {
   return (
@@ -17,6 +18,9 @@ function App() {
         </Route>
         <Route path="/main-page" exact>
           <MainPage />
+        </Route>
+        <Route path="/pass-reset" exact>
+          <PassReset />
         </Route>
         <Redirect to="/" />
       </Switch>  
