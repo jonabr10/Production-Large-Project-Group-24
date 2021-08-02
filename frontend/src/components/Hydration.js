@@ -224,7 +224,7 @@ class Hydration extends Component
         daysOfWeek.push(<Option key={"friday"}>{"Friday"}</Option>);
         daysOfWeek.push(<Option key={"saturday"}>{"Saturday"}</Option>);
         daysOfWeek.push(<Option key={"sunday"}>{"Sunday"}</Option>);
-
+        
         const numberOfHydrationAlarms = this.getRecords();
 
         return (
