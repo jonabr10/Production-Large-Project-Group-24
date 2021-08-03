@@ -103,22 +103,23 @@ Starting Local Testing!
 
 
 Packages installed Danny:
-npm install bootstrap --save
-npm install react-web-tabs --save
-npm install --save react-router-dom
-npm install antd
-npm install react-table
-npm install --save @ant-design/icons
-sudo npm install react-bootstrap
-npm install @restart/context
-npm install @restart/hooks
-npm install @types/invariant
-npm install @types/prop-types
-npm install --save prop-types
-sudo npm i react-bootstrap
-npm install @types/react
-npm install @types/react-transition-group
-npm install @types/warning
+<terminal cmd> 
+    npm install bootstrap --save
+    npm install react-web-tabs --save
+    npm install --save react-router-dom
+    npm install antd
+    npm install react-table
+    npm install --save @ant-design/icons
+    sudo npm install react-bootstrap
+    npm install @restart/context
+    npm install @restart/hooks
+    npm install @types/invariant
+    npm install @types/prop-types
+    npm install --save prop-types
+    sudo npm i react-bootstrap
+    npm install @types/react
+    npm install @types/react-transition-group
+    npm install @types/warning
 
 ===============================
 Email Verification Dependencies
@@ -127,6 +128,7 @@ Email Verification Dependencies
 Source: https://nodemailer.com/about/
 
 <terminal cmd> npm install nodemailer
+<terminal cmd> npm install googleapis 
 
 <go to> .env file
     <add content>

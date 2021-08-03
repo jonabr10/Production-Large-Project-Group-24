@@ -599,7 +599,7 @@ app.post('/api/register', async (req, res, next) => {
         const _uniqueString = await randomizeString();
 
         // send the email to user for account verification with the uniqueString identifier
-        await emailer.sendVerification(email, _uniqueString);
+        emailer.sendVerification(email, _uniqueString);
 
         const registerNewUser = {
             firstName: firstName,
