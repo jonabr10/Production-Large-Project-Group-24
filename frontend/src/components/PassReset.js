@@ -24,25 +24,22 @@ export default class PassReset extends Component
     {        
         if (this.areFieldsValid())
         {
-            /*(let pathBuilder = require('../Path');
+            let pathBuilder = require('../Path');
             
-            let registerPayload = 
+            let newPasswordPayload = 
             {
-                firstName: this.state.firstName, 
-                lastName: this.state.lastName,
-                userName: this.state.username,
                 password: this.state.password,
-                email: this.state.email
+                uniqueString: this.getUniqueString()
             }
 
             let httpRequest = 
             {
                 method: 'post',
-                body: JSON.stringify(registerPayload),
+                body: JSON.stringify(newPasswordPayload),
                 headers: {'Content-Type': 'application/json; charset=utf-8'}
             }
             
-            fetch(pathBuilder.buildPath('api/register'), httpRequest)
+            fetch(pathBuilder.buildPath('api/passwordResetIncoming'), httpRequest)
             .then(this.checkResponse)
             .catch(function(error) { console.log(error); })
             .then(response => response.json())
@@ -51,14 +48,20 @@ export default class PassReset extends Component
                 if (responseData.error.length === 0)
                 {
                     this.clearAllFields();
-                    this.showNotification('success', 'Successfully created user!');
+                    this.showNotification('success', 'Successfully reset password!');
+                    window.location.href = '/sign-in';
                 }
                 else
                 {
                     this.showNotification('error', responseData.error);
                 }
-            });*/
+            });
         }
+    }
+
+    getUniqueString = () =>
+    {
+        
     }
 
     checkResponse = (response) =>
