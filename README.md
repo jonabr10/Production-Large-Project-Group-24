@@ -115,7 +115,10 @@ npm install @restart/hooks
 npm install @types/invariant
 npm install @types/prop-types
 npm install --save prop-types
-
+sudo npm i react-bootstrap
+npm install @types/react
+npm install @types/react-transition-group
+npm install @types/warning
 
 ===============================
 Email Verification Dependencies
