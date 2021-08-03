@@ -125,7 +125,8 @@ Packages installed Danny:
 Email Verification Dependencies
 ===============================
 
-Source: https://nodemailer.com/about/
+Sources: https://nodemailer.com/about/
+         https://www.youtube.com/watch?v=-rcRf7yswfM 
 
 <terminal cmd> npm install nodemailer
 <terminal cmd> npm install googleapis 

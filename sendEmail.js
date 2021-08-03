@@ -74,14 +74,6 @@ exports.sendResetRequest = async function (email, uniqueString) {
         },
     });
 
-    let transporter = nodemailer.createTransport({
-        service: "Gmail",
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD
-        },
-    });
-
     // send mail with defined transport object
     let info = await transporter.sendMail({
         from: '"Health-n-Wellness Support Team" <foo@example.com>', // sender address
