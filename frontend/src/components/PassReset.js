@@ -31,7 +31,7 @@ export default class PassReset extends Component
                 password: this.state.password,
                 uniqueString: this.getUniqueString()
             }
-
+            
             let httpRequest = 
             {
                 method: 'post',
@@ -67,7 +67,7 @@ export default class PassReset extends Component
         let query = urlSplit[1];
         let uniqueString = query.split('=');
 
-        return uniqueString;
+        return uniqueString[1];
     }
 
     checkResponse = (response) =>

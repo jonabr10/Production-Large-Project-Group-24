@@ -30,7 +30,7 @@ export default class PassReset extends Component
             {
                 email: this.state.email
             }
-
+            
             let httpRequest = 
             {
                 method: 'post',
