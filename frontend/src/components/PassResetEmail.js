@@ -24,22 +24,21 @@ export default class PassReset extends Component
     {        
         if (this.areFieldsValid())
         {
-            /*let pathBuilder = require('../Path');
+            let pathBuilder = require('../Path');
             
-            let newPasswordPayload = 
+            let sendEmailPayload = 
             {
-                password: this.state.password,
-                uniqueString: this.getUniqueString()
+                email: this.state.email
             }
 
             let httpRequest = 
             {
                 method: 'post',
-                body: JSON.stringify(newPasswordPayload),
+                body: JSON.stringify(sendEmailPayload),
                 headers: {'Content-Type': 'application/json; charset=utf-8'}
             }
             
-            fetch(pathBuilder.buildPath('api/passwordResetIncoming'), httpRequest)
+            fetch(pathBuilder.buildPath('api/passwordResetOutgoing'), httpRequest)
             .then(this.checkResponse)
             .catch(function(error) { console.log(error); })
             .then(response => response.json())
@@ -48,14 +47,16 @@ export default class PassReset extends Component
                 if (responseData.error.length === 0)
                 {
                     this.clearAllFields();
-                    this.showNotification('success', 'Successfully reset password!');
-                    window.location.href = '/sign-in';
+                    this.showNotification('success', 'Check your email to reset your password!');
+
+                    const element = <a href="/sign-in" className="save-cancel-button">Redirect to Login</a>;
+                    ReactDOM.render(element, document.getElementById('redirectUser'));
                 }
                 else
                 {
                     this.showNotification('error', responseData.error);
                 }
-            });*/
+            });
         }
     }
 
@@ -166,6 +167,7 @@ export default class PassReset extends Component
 
                     <Button type="primary" shape="round" size="medium" onClick={() => { this.doSendEmail(); }}> Submit </Button>
                     <div id="invalidFieldsAlert"></div>
+                    <div id="redirectUser"></div>
                 </div>
             </div>
         );

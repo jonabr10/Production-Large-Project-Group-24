@@ -155,7 +155,7 @@ export default class Login extends Component
                 <div id="invalidFieldsAlert"></div>
 
                 <p className="forgot-password text-right">
-                    Forgot <a href="#">password?</a>
+                    Forgot <a href="/pass-reset-email">password?</a>
                 </p>
             </form>
         );
