@@ -111,7 +111,8 @@ npm install react-table
 npm install --save @ant-design/icons
 sudo npm install react-bootstrap
 npm install @restart/context
-@restart/hooks
+npm install @restart/hooks
+npm install @types/invariant
 
 
 ===============================

@@ -13,6 +13,7 @@
     "@ant-design/icons": "^4.6.2",
     "@restart/context": "^2.1.4",
     "@restart/hooks": "^0.4.0",
+    "@types/invariant": "^2.2.34",
     "antd": "^4.16.10",
     "body-parser": "^1.19.0",
     "bootstrap": "^5.0.2",
