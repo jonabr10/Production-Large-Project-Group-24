@@ -519,6 +519,11 @@ app.post('/api/passwordResetOutgoing', async (req, res, next) => {
     if (user) {
         emailer.sendResetRequest(email, user.uniqueString);
 
+        db.collection('users').updateOne(
+            { "email": email },
+            { $set: { "hasValidated": false } }
+        );
+
         var ret = {
             email: email,
             error: error
