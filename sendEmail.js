@@ -40,7 +40,7 @@ exports.sendVerification = async function (email, uniqueString) {
 
     // send mail with defined transport object
     let info = await transporter.sendMail({
-        from: '"Health-n-Wellness Support Team" <foo@example.com>', // sender address
+        from: process.env.EMAIL_USER, // sender address
         to: email,
         subject: "Health-n-Wellness Registration Verification",
         text: "Health-n-Wellness Registration Verification", // plain text body
@@ -76,7 +76,7 @@ exports.sendResetRequest = async function (email, uniqueString) {
 
     // send mail with defined transport object
     let info = await transporter.sendMail({
-        from: '"Health-n-Wellness Support Team" <foo@example.com>', // sender address
+        from: process.env.EMAIL_USER, // sender address
         to: email,
         subject: "Health-n-Wellness Password Reset Request",
         text: "Health-n-Wellness Password Reset Request", // plain text body
