@@ -109,6 +109,8 @@ npm install --save react-router-dom
 npm install antd
 npm install react-table
 npm install --save @ant-design/icons
+sudo npm install react-bootstrap
+npm install @restart/context
 
 
 ===============================
