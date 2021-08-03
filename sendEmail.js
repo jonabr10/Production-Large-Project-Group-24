@@ -29,7 +29,7 @@ exports.sendVerification = async function (email, uniqueString) {
         let transporter = nodemailer.createTransport({
             service: "Gmail",
             auth: {
-                type: 'OAuth2',
+                type: 'oauth2',
                 user: process.env.EMAIL_USER,
                 clientId: CLIENT_ID,
                 clientSecret: CLIENT_SECRET,
@@ -48,6 +48,7 @@ exports.sendVerification = async function (email, uniqueString) {
         });
 
         console.log("<emailer> Verification message sent to email: %s : uniqueString: %s : messageId: %s", email, uniqueString, info.messageId);
+
     } catch (e) {
         console.log("<emailer> error: " + e.message);
     }
