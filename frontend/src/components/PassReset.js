@@ -39,7 +39,7 @@ export default class PassReset extends Component
                 headers: {'Content-Type': 'application/json; charset=utf-8'}
             }
             
-            fetch(pathBuilder.buildPath('api/passwordResetIncoming'), httpRequest)
+            fetch(pathBuilder.buildPath('api/reset'), httpRequest)
             .then(this.checkResponse)
             .catch(function(error) { console.log(error); })
             .then(response => response.json())
@@ -49,7 +49,9 @@ export default class PassReset extends Component
                 {
                     this.clearAllFields();
                     this.showNotification('success', 'Successfully reset password!');
-                    window.location.href = '/sign-in';
+                    
+                    const element = <a href="/sign-in" className="save-cancel-button">Redirect to Login</a>;
+                    ReactDOM.render(element, document.getElementById('redirectUser'));
                 }
                 else
                 {
@@ -173,6 +175,7 @@ export default class PassReset extends Component
 
                     <Button type="primary" shape="round" size="medium" onClick={() => { this.doCreateNewPassword(); }}> Create new password </Button>
                     <div id="invalidFieldsAlert"></div>
+                    <div id="redirectUser"></div>
                 </div>
             </div>
         );
