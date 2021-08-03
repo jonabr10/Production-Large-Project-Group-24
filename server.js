@@ -830,20 +830,36 @@ app.post('/api/getAllUserScheduledAlarms', async (req, res, next) => {
     // returns a string format of the current time GMT-0400 in HH:MM format
     var currentTime = await getCurrentTime();
 
+    console.log(currentTime);
+
     // returns a string format of the current day (monday, tuesday, etc..)
     var currentDay = await getCurrentDay();
     query[currentDay] = true;
 
+    console.log(query);
+
     const db = client.db();
-    const alarmResults = await db.collection('alarms').find({
-        $and: [
-            { "userId": userId },
-            { "time": { $regex: currentTime + '.*', $options: 'r' } },
-            { query }
-        ]
-    }).toArray();
+    // const alarmResults = await db.collection('alarms').find({
+    //     $and: [
+    //         { "userId": userId },
+    //         //  "time": { $regex: currentTime + '.*', $options: 'r' } },
+    //         { query }
+    //     ]
+    // }).toArray();
+
+    const alarmResults = await db.collection('alarms').find(
+        {
+            $and: [
+                { "userId": userId },
+                { "time": { $regex: currentTime + '.*', $options: 'r' } },
+                { query }
+            ]
+        }
+    ).toArray();
 
     var _retAlarms = [];
+
+    console.log(alarmResults);
 
     if (alarmResults.length > 0) {
         for (var i = 0; i < alarmResults.length; i++) {
@@ -875,24 +891,8 @@ app.post('/api/getAllUserScheduledAlarms', async (req, res, next) => {
 // Purpose: provides a JSON array of all the alarms that is associated to userId value
 app.post('/api/getAllUserAlarms', async (req, res, next) => {
 
-    const { userId, jwtToken } = req.body;
+    const { userId } = req.body;
     var error = '';
-
-    // validate time remaining of JWT
-    try {
-        if (token.isExpired(jwtToken)) {
-            var r = {
-                error: 'The JWT is no longer valid',
-                jwtToken: ''
-            };
-
-            res.status(200).json(r);
-            return;
-        }
-    }
-    catch (e) {
-        console.log(e.message);
-    }
 
     const db = client.db();
     const alarmResults = await db.collection('alarms').find(
@@ -904,10 +904,18 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
         var _retAlarms = [];
 
         for (var i = 0; i < alarmResults.length; i++) {
+
+            var itemObj = await getItemUsingObjId(alarmResults[i].itemId);
+
             _retAlarms.push({
                 _id: alarmResults[i]._id,
                 userId: alarmResults[i].userId,
                 itemId: alarmResults[i].itemId,
+                item: itemObj.item,
+                workout: itemObj.workout,
+                rx: itemObj.rx,
+                hy: itemObj.hy,
+                waterAmount: itemObj.waterAmount,
                 time: alarmResults[i].time,
                 monday: alarmResults[i].monday,
                 tuesday: alarmResults[i].tuesday,
@@ -919,19 +927,9 @@ app.post('/api/getAllUserAlarms', async (req, res, next) => {
             });
         }
 
-        var refreshedToken = null;
-
-        try {
-            refreshedToken = token.refresh(jwtToken);
-        }
-        catch (e) {
-            console.log(e.message);
-        }
-
         var ret = {
             Alarms: _retAlarms,
-            error: error,
-            jwtToken: refreshedToken
+            error: error
         };
 
         res.status(200).json(ret);
