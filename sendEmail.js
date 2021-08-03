@@ -11,11 +11,11 @@ const REDIRECT_URI = 'https://developers.google.com/oauthplayground';
 const REFRESH_TOKEN = '1//04qJVMr85uwIHCgYIARAAGAQSNwF-L9IrytQfQ3P-qH3IXf-am01VXkMJGgSCCW21SpiaVdyrSmdMPLYYLIXi4UsdXxV-zS7NDnI';
 
 // OAuth2 Access
-const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+// const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+// oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
-// oAuth2 access token
-const accessToken = oAuth2Client.getAccessToken();
+// // oAuth2 access token
+// const accessToken = oAuth2Client.getAccessToken();
 
 let transporter = nodemailer.createTransport({
     service: "Gmail",
@@ -26,7 +26,7 @@ let transporter = nodemailer.createTransport({
         clientId: CLIENT_ID,
         clientSecret: CLIENT_SECRET,
         refreshToken: REFRESH_TOKEN,
-        accessToken: accessToken,
+        accessToken: new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI).setCredentials({ refresh_token: REFRESH_TOKEN }),
     },
 });
 
