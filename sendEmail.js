@@ -1,5 +1,4 @@
 const nodemailer = require("nodemailer");
-// const { google } = require("googleapis");
 let pathBuilder = require('./frontend/src/Path');
 
 require("dotenv").config();
