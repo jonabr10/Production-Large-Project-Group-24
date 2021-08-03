@@ -16,6 +16,7 @@
     "@types/invariant": "^2.2.34",
     "@types/prop-types": "^15.7.4",
     "@types/react": "^17.0.15",
+    "@types/react-transition-group": "^4.4.2",
     "antd": "^4.16.10",
     "body-parser": "^1.19.0",
     "bootstrap": "^5.0.2",

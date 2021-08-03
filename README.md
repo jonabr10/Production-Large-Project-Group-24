@@ -117,6 +117,7 @@ npm install @types/prop-types
 npm install --save prop-types
 sudo npm i react-bootstrap
 npm install @types/react
+npm install @types/react-transition-group
 
 
 ===============================
