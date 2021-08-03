@@ -113,6 +113,8 @@ sudo npm install react-bootstrap
 npm install @restart/context
 npm install @restart/hooks
 npm install @types/invariant
+npm install @types/prop-types
+npm install --save prop-types
 
 
 ===============================
