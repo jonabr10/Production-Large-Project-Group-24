@@ -118,7 +118,7 @@ npm install --save prop-types
 sudo npm i react-bootstrap
 npm install @types/react
 npm install @types/react-transition-group
-
+npm install @types/warning
 
 ===============================
 Email Verification Dependencies
