@@ -11,42 +11,46 @@ const REDIRECT_URI = 'https://developers.google.com/oauthplayground';
 const REFRESH_TOKEN = '1//04qJVMr85uwIHCgYIARAAGAQSNwF-L9IrytQfQ3P-qH3IXf-am01VXkMJGgSCCW21SpiaVdyrSmdMPLYYLIXi4UsdXxV-zS7NDnI';
 
 // OAuth2 Access
-const oAth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-oAth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 // Incoming: email, uniqueString
 // Outgoing: account verification email
 // Purpose: this is to set hasValidated to true after user clicks on the hyperlink for registration
 exports.sendVerification = async function (email, uniqueString) {
-    // the api route contain the route to the api for verify and the uniqueString identifier for a
-    // specific user
-    var apiRoute = "verify/" + uniqueString;
+    try {
+        // the api route contain the route to the api for verify and the uniqueString identifier for a
+        // specific user
+        var apiRoute = "verify/" + uniqueString;
 
-    // oAuth2 access token
-    const accessToken = await oAth2Client.getAccessToken();
+        // oAuth2 access token
+        const accessToken = await oAuth2Client.getAccessToken();
 
-    let transporter = nodemailer.createTransport({
-        service: "Gmail",
-        auth: {
-            type: 'OAuth2',
-            user: process.env.EMAIL_USER,
-            clientId: CLIENT_ID,
-            clientSecret: CLIENT_SECRET,
-            refreshToken: REFRESH_TOKEN,
-            accessToken: accessToken,
-        },
-    });
+        let transporter = nodemailer.createTransport({
+            service: "Gmail",
+            auth: {
+                type: 'OAuth2',
+                user: process.env.EMAIL_USER,
+                clientId: CLIENT_ID,
+                clientSecret: CLIENT_SECRET,
+                refreshToken: REFRESH_TOKEN,
+                accessToken: accessToken,
+            },
+        });
 
-    // send mail with defined transport object
-    let info = await transporter.sendMail({
-        from: "Health-n-Welness Support Team <" + process.env.EMAIL_USER + ">", // sender address
-        to: email,
-        subject: "Health-n-Wellness Registration Verification",
-        text: "Health-n-Wellness Registration Verification", // plain text body
-        html: "<h1>Welcome to the Health-n-Wellness App!</h1><b>Please click on the link to verify your account <a href=" + pathBuilder.buildPath(apiRoute) + "> here </a></b></b>", // html body
-    });
+        // send mail with defined transport object
+        let info = await transporter.sendMail({
+            from: "Health-n-Welness Support Team <" + process.env.EMAIL_USER + ">", // sender address
+            to: email,
+            subject: "Health-n-Wellness Registration Verification",
+            text: "Health-n-Wellness Registration Verification", // plain text body
+            html: "<h1>Welcome to the Health-n-Wellness App!</h1><b>Please click on the link to verify your account <a href=" + pathBuilder.buildPath(apiRoute) + "> here </a></b></b>", // html body
+        });
 
-    console.log("<emailer> Verification message sent to email: %s : uniqueString: %s : messageId: %s", email, uniqueString, info.messageId);
+        console.log("<emailer> Verification message sent to email: %s : uniqueString: %s : messageId: %s", email, uniqueString, info.messageId);
+    } catch (e) {
+        console.log("<emailer> error: " + e.message);
+    }
 }
 
 // Incoming: email, uniqueString
@@ -58,7 +62,7 @@ exports.sendResetRequest = async function (email, uniqueString) {
     var apiRoute = "reset/" + uniqueString;
 
     // oAuth2 access token
-    const accessToken = await oAth2Client.getAccessToken();
+    const accessToken = await oAuth2Client.getAccessToken();
 
     let transporter = nodemailer.createTransport({
         service: "Gmail",
