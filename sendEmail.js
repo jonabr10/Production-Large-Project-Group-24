@@ -47,7 +47,7 @@ exports.sendResetRequest = async function (email, uniqueString) {
         to: email,
         subject: "Health-n-Wellness Password Reset Request",
         text: "Health-n-Wellness Password Reset Request", // plain text body
-        html: "<h1>Health-n-Wellness Password Reset Request!</h1><b>Please click on the link to verify your account <a href=" + "http://localhost:3000/" + apiRoute + "> here </a></b></b>", // html body
+        html: "<h1>Health-n-Wellness Password Reset Request!</h1><b>Please click on the link to verify your account <a href=" + pathBuilder.buildPath(apiRoute) + "> here </a></b></b>", // html body
     });
 
     console.log("<emailer> Reset request message sent to email: %s : uniqueString: %s : message.Id: %s", email, uniqueString, info.messageId);
