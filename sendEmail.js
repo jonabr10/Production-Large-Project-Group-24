@@ -34,13 +34,12 @@ exports.sendVerification = async function (email, uniqueString) {
             clientSecret: CLIENT_SECRET,
             refreshToken: REFRESH_TOKEN,
             accessToken: accessToken,
-            pass: process.env.EMAIL_PASSWORD
         },
     });
 
     // send mail with defined transport object
     let info = await transporter.sendMail({
-        from: process.env.EMAIL_USER, // sender address
+        from: "Health-n-Welness Support Team <" + process.env.EMAIL_USER + ">", // sender address
         to: email,
         subject: "Health-n-Wellness Registration Verification",
         text: "Health-n-Wellness Registration Verification", // plain text body
@@ -70,13 +69,12 @@ exports.sendResetRequest = async function (email, uniqueString) {
             clientSecret: CLIENT_SECRET,
             refreshToken: REFRESH_TOKEN,
             accessToken: accessToken,
-            pass: process.env.EMAIL_PASSWORD
         },
     });
 
     // send mail with defined transport object
     let info = await transporter.sendMail({
-        from: process.env.EMAIL_USER, // sender address
+        from: "Health-n-Welness Support Team <" + process.env.EMAIL_USER + ">", // sender address
         to: email,
         subject: "Health-n-Wellness Password Reset Request",
         text: "Health-n-Wellness Password Reset Request", // plain text body
