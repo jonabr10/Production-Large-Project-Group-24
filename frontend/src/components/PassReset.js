@@ -39,7 +39,7 @@ export default class PassReset extends Component
                 headers: {'Content-Type': 'application/json; charset=utf-8'}
             }
             
-            fetch(pathBuilder.buildPath('api/reset'), httpRequest)
+            fetch(pathBuilder.buildPath('api/passwordResetIncoming'), httpRequest)
             .then(this.checkResponse)
             .catch(function(error) { console.log(error); })
             .then(response => response.json())
@@ -63,7 +63,11 @@ export default class PassReset extends Component
 
     getUniqueString = () =>
     {
-        
+        let urlSplit = window.location.href.split('?');
+        let query = urlSplit[1];
+        let uniqueString = query.split('=');
+
+        return uniqueString;
     }
 
     checkResponse = (response) =>
