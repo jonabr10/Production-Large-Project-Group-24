@@ -31,7 +31,7 @@ exports.sendVerification = async function (email, uniqueString) {
 exports.sendResetRequest = async function (email, uniqueString) {
     // the api route contain the route to the api for verify and the uniqueString identifier for a
     // specific user
-    var apiRoute = "reset/" + uniqueString;
+    var apiRoute = "pass-reset/" + uniqueString;
 
     let transporter = nodemailer.createTransport({
         service: "Gmail",
