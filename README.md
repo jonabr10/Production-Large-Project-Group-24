@@ -126,10 +126,8 @@ Email Verification Dependencies
 ===============================
 
 Sources: https://nodemailer.com/about/
-         https://www.youtube.com/watch?v=-rcRf7yswfM 
 
 <terminal cmd> npm install nodemailer
-<terminal cmd> npm install googleapis 
 
 <go to> .env file
     <add content>
