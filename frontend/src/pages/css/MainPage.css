@@ -85,7 +85,7 @@ html, body {
   border-radius: 18px;
   background-color:rgb(195, 241, 238);
   overflow-wrap: break-word;
-  
+  top: -33px;
 }
 
 div.upper > img {
