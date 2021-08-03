@@ -28,6 +28,9 @@ const e = require('express');
 const { type } = require('os');
 const { query } = require('express');
 
+// path builder
+let pathBuilder = require('./frontend/src/Path');
+
 // Incoming: userName, email
 // Outgoing: user (singular)
 async function getUser(userName, email) {
@@ -404,8 +407,10 @@ app.get('/verify/:uniqueString', async (req, res) => {
                 uniqueString: user.uniqueString
             };
 
+            var verifyPageRoute = "sign-in/";
+
             // TODO: change this to the login page once finished!
-            return res.redirect('http://google.com/');
+            return res.redirect(pathBuilder.buildPath(verifyPageRoute));
         }
     }
 
@@ -462,6 +467,8 @@ app.get('/reset/:uniqueString', async (req, res) => {
                 error = e.toString();
             }
 
+            var resetPageRoute = "pass-reset/" + uniqueString;
+
             var ret = {
                 firstName: user.firstName,
                 lastName: user.lastName,
@@ -473,7 +480,7 @@ app.get('/reset/:uniqueString', async (req, res) => {
             };
 
             // TODO: change this to the login page once finished!
-            return res.redirect('http://google.com/' + uniqueString);
+            return res.redirect(pathBuilder.buildPath(resetPageRoute));
         }
     }
 
@@ -533,9 +540,8 @@ app.post('/api/passwordResetOutgoing', async (req, res, next) => {
 // Outgoing: userName, password, retypePassword, error
 // Purpose: confirms the user's uniqueString and userName prior to changing the user's password
 // app.post('/api/passwordResetincoming', async (req, res, next) => {
-app.post('/api/passwordResetIncoming/:uniqueString', async (req, res, next) => {
-    const { uniqueString } = req.params;
-    const { password } = req.body;
+app.post('/api/passwordResetIncoming', async (req, res, next) => {
+    const { uniqueString, password } = req.body;
     var error = '';
 
     // find the user using uniqueString and userName
