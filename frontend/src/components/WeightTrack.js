@@ -61,6 +61,7 @@ class WeightTrack extends Component
                     tokenStorage.storeToken(responseData.jwtToken);
                     this.clearEditFields();
                     this.updateStartingWeight(addWeightPayload.startingWeight);
+                    this.stopEditing();
                     this.showNotification('success', 'Successfully updated starting weight!');
                 }
                 else
@@ -364,7 +365,11 @@ class WeightTrack extends Component
     
     getPercentageDifference = (startingWeight, currentWeight, desiredWeight) => 
     {
-        
+        let diff1 = Math.abs(startingWeight - desiredWeight);
+        let diff2 = Math.abs(startingWeight - currentWeight);
+        let percentage = Math.round(diff2 / diff1 * 100);
+
+        return percentage;
     }
 
     setEditing = (isEditing) => 
@@ -404,7 +409,7 @@ class WeightTrack extends Component
         const startingWeight = this.getStartingWeightRender();
         const currentWeight = this.getWeight();
         const desiredWeight = this.getDesiredWeight();
-        const goalPercentage = Math.round((currentWeight / desiredWeight) * 100);
+        const goalPercentage = this.getPercentageDifference(this.getStartingWeight(), currentWeight, desiredWeight);
         
         return (
             <div class="grid-container">   
