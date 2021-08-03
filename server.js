@@ -691,59 +691,75 @@ app.post('/api/login', async (req, res, next) => {
     var currentWeightDifferenceFromGoal = 0;
 
     if (results.length > 0) {
-        // get user's credentials
-        id = results[0].userId;
-        fn = results[0].firstName;
-        ln = results[0].lastName;
-        email = results[0].email;
-
-        // get user's count: hy, workout, and rx
-        var numberHy = await countOfHy(id);
-        var numberWorkout = await countOfWorkout(id);
-        var numberRx = await countOfRx(id);
-
-        // get user's weight, desiredWeight, and currentWeightDifferenceFromGoal
-        const weightObj = await db.collection('weights').findOne(
-            { "userId": id }
-        )
-
-        if (weightObj) {
-            weight = weightObj.weight;
-            startingWeight = weightObj.startingWeight;
-            desiredWeight = weightObj.desiredWeight;
-            currentWeightDifferenceFromGoal = Math.abs(desiredWeight - weight);
-        }
-
-        try {
-            const token = require("./createJWT.js");
-            jwtToken = token.createToken(fn, ln, id, email);
-
+        if (results[0].hasValidated == false) {
             var ret = {
                 id: id,
                 firstName: fn,
                 lastName: ln,
                 email: email,
-                numberHy: numberHy,
-                numberWorkout: numberWorkout,
-                numberRx: numberRx,
+                numberHy: 0,
+                numberWorkout: 0,
+                numberRx: 0,
                 weight: weight,
                 startingWeight: startingWeight,
                 desiredWeight: desiredWeight,
                 currentWeightDifferenceFromGoal: currentWeightDifferenceFromGoal,
-                error: '',
-                jwtToken
+                error: 'User needs to verify email.'
             };
+        } else {
+            // get user's credentials
+            id = results[0].userId;
+            fn = results[0].firstName;
+            ln = results[0].lastName;
+            email = results[0].email;
 
-            // Debug: delete me!
-            // emailer.testEmail(email);
-        }
-        catch (e) {
-            ret = {
-                error: e.message
-            };
+            // get user's count: hy, workout, and rx
+            var numberHy = await countOfHy(id);
+            var numberWorkout = await countOfWorkout(id);
+            var numberRx = await countOfRx(id);
+
+            // get user's weight, desiredWeight, and currentWeightDifferenceFromGoal
+            const weightObj = await db.collection('weights').findOne(
+                { "userId": id }
+            )
+
+            if (weightObj) {
+                weight = weightObj.weight;
+                startingWeight = weightObj.startingWeight;
+                desiredWeight = weightObj.desiredWeight;
+                currentWeightDifferenceFromGoal = Math.abs(desiredWeight - weight);
+            }
+
+            try {
+                const token = require("./createJWT.js");
+                jwtToken = token.createToken(fn, ln, id, email);
+
+                var ret = {
+                    id: id,
+                    firstName: fn,
+                    lastName: ln,
+                    email: email,
+                    numberHy: numberHy,
+                    numberWorkout: numberWorkout,
+                    numberRx: numberRx,
+                    weight: weight,
+                    startingWeight: startingWeight,
+                    desiredWeight: desiredWeight,
+                    currentWeightDifferenceFromGoal: currentWeightDifferenceFromGoal,
+                    error: '',
+                    jwtToken
+                };
+
+                // Debug: delete me!
+                // emailer.testEmail(email);
+            }
+            catch (e) {
+                ret = {
+                    error: e.message
+                };
+            }
         }
     }
-
     else {
         var ret = {
             id: id,
