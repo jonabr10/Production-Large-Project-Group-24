@@ -467,7 +467,7 @@ app.get('/reset/:uniqueString', async (req, res) => {
                 error = e.toString();
             }
 
-            var resetPageRoute = "pass-reset/" + uniqueString;
+            var resetPageRoute = "pass-reset" + "?uniqueString=" + uniqueString;
 
             var ret = {
                 firstName: user.firstName,
@@ -480,7 +480,8 @@ app.get('/reset/:uniqueString', async (req, res) => {
             };
 
             // TODO: change this to the login page once finished!
-            return res.redirect(pathBuilder.buildPath(resetPageRoute));
+            // return res.redirect(pathBuilder.buildPath(resetPageRoute));
+            return res.redirect("http://localhost:3000/" + resetPageRoute);
         }
     }
 
