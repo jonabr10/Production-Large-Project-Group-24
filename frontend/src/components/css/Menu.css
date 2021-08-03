@@ -1,9 +1,22 @@
 .grid-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 30px;
     height: 450px;
 }
+
+.float-container {
+    padding: 20px;
+}
+
+.float-left {
+    width: 50%;
+    float: left;
+    padding: 10px;
+}  
+
+.float-right {
+    width: 50%;
+    float: right;
+    padding: 10px;
+}  
 
 .grid-child{
     overflow-x: hidden;
@@ -40,4 +53,52 @@
 .select-label label {
     display: block;
     text-align:center;
+}
+
+table{
+    width: 99%;
+    margin:-10 px;
+}
+
+.inner {
+    width: 390px;
+    margin: auto;
+    background: #ffffff;
+    box-shadow: 0px 14px 80px rgba(34, 35, 58, 0.2);
+    padding: 40px 55px 45px 55px;
+    border-radius: 15px;
+    transition: all .3s;
+}
+
+.time-input {
+    height: 40px;
+}
+
+.days-input {
+    width: 280px;
+}
+
+.time-input-table {
+    width: 200px;
+}
+
+.days-input-table {
+    width: 200px;
+}
+
+.alarmName-input-table {
+    width: 160px;
+    height: 33px;
+}
+
+.save-cancel-button {
+    margin-right: 10px;
+}
+
+.pass-reset {
+    margin-top: 250px;
+}
+
+.weight-edit-button {
+    margin-right: -1px;
 }

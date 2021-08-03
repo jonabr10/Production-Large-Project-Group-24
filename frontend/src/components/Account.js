@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { Component } from 'react';
 import './css/Menu.css';
 
-function Account()
+class Account extends Component
 {
-    return(
-        <div>
-            <h3>FirstName LastName</h3>
-        </div>
-        
-    );
-};
+    constructor(props)
+    {
+        super(props);
+    }
+
+    render()
+    {
+        return (
+            <div>
+                <h3>{this.props.userData.firstName} {this.props.userData.lastName}</h3>
+            </div>
+        );
+    }
+}
 
 export default Account;
