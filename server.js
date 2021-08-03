@@ -535,56 +535,33 @@ app.post('/api/passwordResetOutgoing', async (req, res, next) => {
 // app.post('/api/passwordResetincoming', async (req, res, next) => {
 app.post('/api/passwordResetIncoming/:uniqueString', async (req, res, next) => {
     const { uniqueString } = req.params;
-    const { userName, password, retypePassword } = req.body;
+    const { password } = req.body;
     var error = '';
 
     // find the user using uniqueString and userName
     const db = client.db();
     const user = await db.collection('users').findOne(
-        {
-            $and: [
-                { "uniqueString": uniqueString },
-                { "userName": userName }
-            ]
-        }
+        { "uniqueString": uniqueString }
     )
 
     if (user) {
-        // validating if the password and retypePassword are the same
-        if (password === retypePassword) {
-            db.collection('users').updateOne(
-                { userName: userName },
-                { $set: { "password": password } }
-            );
 
-            var ret = {
-                userName: userName,
-                password: password,
-                retypePassword: retypePassword,
-                uniqueString: uniqueString,
-                error: error
-            }
-        }
+        db.collection('users').updateOne(
+            { uniqueString: uniqueString },
+            { $set: { "password": password } }
+        );
 
-        else {
-            error = 'password and retypePassword does not match';
-
-            var ret = {
-                userName: userName,
-                password: password,
-                retypePassword: retypePassword,
-                uniqueString: uniqueString,
-                error: error
-            }
+        var ret = {
+            password: password,
+            uniqueString: uniqueString,
+            error: error
         }
 
     } else {
         error = 'User does not exist';
 
         var ret = {
-            userName: userName,
             password: password,
-            retypePassword: retypePassword,
             uniqueString: uniqueString,
             error: error
         }
