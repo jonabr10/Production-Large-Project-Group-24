@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import './css/Menu.css';
 import { Alert, notification, Button } from 'antd';
-import { ClockCircleOutlined } from '@ant-design/icons';
 
 export default class PassReset extends Component 
 {
@@ -11,8 +10,8 @@ export default class PassReset extends Component
         super(props);
         this.state = 
         {
-            oldPassword: '',
-            newPassword: ''
+            password: '',
+            confirmPassword: ''
         }
     }
 
@@ -21,6 +20,47 @@ export default class PassReset extends Component
         this.setState({ [target.name]: target.value });
     }
     
+    doCreateNewPassword = () =>
+    {        
+        if (this.areFieldsValid())
+        {
+            /*(let pathBuilder = require('../Path');
+            
+            let registerPayload = 
+            {
+                firstName: this.state.firstName, 
+                lastName: this.state.lastName,
+                userName: this.state.username,
+                password: this.state.password,
+                email: this.state.email
+            }
+
+            let httpRequest = 
+            {
+                method: 'post',
+                body: JSON.stringify(registerPayload),
+                headers: {'Content-Type': 'application/json; charset=utf-8'}
+            }
+            
+            fetch(pathBuilder.buildPath('api/register'), httpRequest)
+            .then(this.checkResponse)
+            .catch(function(error) { console.log(error); })
+            .then(response => response.json())
+            .then(responseData =>
+            {
+                if (responseData.error.length === 0)
+                {
+                    this.clearAllFields();
+                    this.showNotification('success', 'Successfully created user!');
+                }
+                else
+                {
+                    this.showNotification('error', responseData.error);
+                }
+            });*/
+        }
+    }
+
     checkResponse = (response) =>
     {
         if (response.status >= 500)
@@ -67,15 +107,7 @@ export default class PassReset extends Component
 
     areAllFieldsFilled = () => 
     {
-        return this.state.firstName.length > 0 && this.state.lastName.length > 0 && this.state.email.length > 0 && 
-            this.state.username.length > 0 && this.state.password.length > 0 && this.state.confirmPassword.length > 0;
-    }
-
-    isValidEmail = () => 
-    {
-        let validatingEmailCharacters = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    
-        return validatingEmailCharacters.test(this.state.email);
+        return this.state.password.length > 0 && this.state.confirmPassword.length > 0;
     }
 
     arePasswordsMatching = () => 
@@ -109,19 +141,11 @@ export default class PassReset extends Component
 
     clearAllFields = () =>
     {
-        document.getElementById('firstName').value = '';
-        document.getElementById('lastName').value = '';
-        document.getElementById('email').value = '';
-        document.getElementById('username').value = '';
         document.getElementById('password').value = '';
         document.getElementById('confirmPassword').value = '';
         
         this.setState
         ({ 
-            firstName: '',
-            lastName: '',
-            email: '',
-            username: '',
             password: '',
             confirmPassword: ''
         });
@@ -132,11 +156,19 @@ export default class PassReset extends Component
             <div class="pass-reset">
                 <div class="inner">
                     <div className="form-group">
-                        <label>Alarm Name</label>
-                        <input type="text" id="alarmName" name="alarmName" className="form-control" placeholder="Describe this alarm" maxLength="50" onChange={this.handleInputChange} />
+                        <label>Password</label>
+                        <input type="password" id="password" name="password" className="form-control" placeholder="Enter password" maxLength="50" onChange={this.handleInputChange} />
+                        <div id="invalidPasswordAlert"></div>
                     </div>
+
+                    <div className="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" className="form-control" placeholder="Confirm password" maxLength="50" onChange={this.handleInputChange} />
+                    </div>
+                    
                     <br></br>
-                    <Button type="default" shape="square" size="small" icon={<ClockCircleOutlined />} onClick={() => { this.doCreate(); }}> Create Alarm </Button>
+
+                    <Button type="primary" shape="round" size="medium" onClick={() => { this.doCreateNewPassword(); }}> Create new password </Button>
                     <div id="invalidFieldsAlert"></div>
                 </div>
             </div>
