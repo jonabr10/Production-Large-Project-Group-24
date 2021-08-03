@@ -405,7 +405,7 @@ app.get('/verify/:uniqueString', async (req, res) => {
             };
 
             // TODO: change this to the login page once finished!
-            return res.redirect('http://google.com/');
+            return res.redirect('http://google.com/sign-in');
         }
     }
 
@@ -473,7 +473,7 @@ app.get('/reset/:uniqueString', async (req, res) => {
             };
 
             // TODO: change this to the login page once finished!
-            return res.redirect('http://google.com/' + uniqueString);
+            return res.redirect('http://google.com/pass-reset/' + uniqueString);
         }
     }
 
@@ -533,9 +533,8 @@ app.post('/api/passwordResetOutgoing', async (req, res, next) => {
 // Outgoing: userName, password, retypePassword, error
 // Purpose: confirms the user's uniqueString and userName prior to changing the user's password
 // app.post('/api/passwordResetincoming', async (req, res, next) => {
-app.post('/api/passwordResetIncoming/:uniqueString', async (req, res, next) => {
-    const { uniqueString } = req.params;
-    const { password } = req.body;
+app.post('/api/passwordResetIncoming', async (req, res, next) => {
+    const { uniqueString, password } = req.body;
     var error = '';
 
     // find the user using uniqueString and userName
