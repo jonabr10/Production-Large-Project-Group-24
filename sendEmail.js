@@ -14,6 +14,21 @@ const REFRESH_TOKEN = '1//04qJVMr85uwIHCgYIARAAGAQSNwF-L9IrytQfQ3P-qH3IXf-am01VX
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
 oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
+// oAuth2 access token
+const accessToken = oAuth2Client.getAccessToken();
+
+let transporter = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+        type: 'oauth2',
+        user: process.env.EMAIL_USER,
+        clientId: CLIENT_ID,
+        clientSecret: CLIENT_SECRET,
+        refreshToken: REFRESH_TOKEN,
+        accessToken: accessToken,
+    },
+});
+
 // Incoming: email, uniqueString
 // Outgoing: account verification email
 // Purpose: this is to set hasValidated to true after user clicks on the hyperlink for registration
@@ -22,21 +37,6 @@ exports.sendVerification = async function (email, uniqueString) {
         // the api route contain the route to the api for verify and the uniqueString identifier for a
         // specific user
         var apiRoute = "verify/" + uniqueString;
-
-        // oAuth2 access token
-        const accessToken = await oAuth2Client.getAccessToken();
-
-        let transporter = nodemailer.createTransport({
-            service: "Gmail",
-            auth: {
-                type: 'oauth2',
-                user: process.env.EMAIL_USER,
-                clientId: CLIENT_ID,
-                clientSecret: CLIENT_SECRET,
-                refreshToken: REFRESH_TOKEN,
-                accessToken: accessToken,
-            },
-        });
 
         // send mail with defined transport object
         let info = await transporter.sendMail({
@@ -63,19 +63,20 @@ exports.sendResetRequest = async function (email, uniqueString) {
     var apiRoute = "reset/" + uniqueString;
 
     // oAuth2 access token
-    const accessToken = await oAuth2Client.getAccessToken();
+    // const accessToken = await oAuth2Client.getAccessToken();
 
-    let transporter = nodemailer.createTransport({
-        service: "Gmail",
-        auth: {
-            type: 'OAuth2',
-            user: process.env.EMAIL_USER,
-            clientId: CLIENT_ID,
-            clientSecret: CLIENT_SECRET,
-            refreshToken: REFRESH_TOKEN,
-            accessToken: accessToken,
-        },
-    });
+    // let transporter = nodemailer.createTransport({
+    //     service: "Gmail",
+    //     auth: {
+    //         type: 'OAuth2',
+    //         user: process.env.EMAIL_USER,
+    //         pass: process.env.EMAIL_PASSWORD,
+    //         clientId: CLIENT_ID,
+    //         clientSecret: CLIENT_SECRET,
+    //         refreshToken: REFRESH_TOKEN,
+    //         accessToken: accessToken
+    //     },
+    // });
 
     // send mail with defined transport object
     let info = await transporter.sendMail({
