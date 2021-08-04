@@ -887,67 +887,6 @@ app.post('/api/getAllUserScheduledAlarms', async (req, res, next) => {
 });
 
 // Incoming: userId
-// Outgoing: all user Alarms[] w/ userId
-// Purpose: provides a JSON array of all the alarms that is associated to userId value
-app.post('/api/getAllUserAlarms', async (req, res, next) => {
-
-    const { userId } = req.body;
-    var error = '';
-
-    const db = client.db();
-    const alarmResults = await db.collection('alarms').find(
-        { "userId": userId }
-    ).toArray();
-
-    if (alarmResults.length > 0) {
-
-        var _retAlarms = [];
-
-        for (var i = 0; i < alarmResults.length; i++) {
-
-            var itemObj = await getItemUsingObjId(alarmResults[i].itemId);
-
-            _retAlarms.push({
-                _id: alarmResults[i]._id,
-                userId: alarmResults[i].userId,
-                itemId: alarmResults[i].itemId,
-                item: itemObj.item,
-                workout: itemObj.workout,
-                rx: itemObj.rx,
-                hy: itemObj.hy,
-                waterAmount: itemObj.waterAmount,
-                time: alarmResults[i].time,
-                monday: alarmResults[i].monday,
-                tuesday: alarmResults[i].tuesday,
-                wednesday: alarmResults[i].wednesday,
-                thursday: alarmResults[i].thursday,
-                friday: alarmResults[i].friday,
-                saturday: alarmResults[i].saturday,
-                sunday: alarmResults[i].sunday
-            });
-        }
-
-        var ret = {
-            Alarms: _retAlarms,
-            error: error
-        };
-
-        res.status(200).json(ret);
-    }
-
-    else {
-        error = "No records found";
-
-        var ret = {
-            results: _ret,
-            error: error
-        };
-
-        res.status(200).json(ret);
-    }
-});
-
-// Incoming: userId
 // Outgoing: numberRx
 async function countOfHy(userId) {
 
@@ -1704,6 +1643,140 @@ app.use((req, res, next) => {
         'GET, POST, PATCH, DELETE, OPTIONS'
     );
     next();
+});
+
+// ==========
+// mobile app
+// ==========
+
+// Incoming: userId, search
+// Outgoing: results[], error
+// Purpose:  searches the database based on the userId and item (item name)
+app.post('/api/searchMobile', async (req, res, next) => {
+
+    const { userId, search } = req.body;
+    var error = '';
+
+    var _search = search.trim();
+    const db = client.db();
+    const itemResults = await db.collection('items').find(
+        {
+            $and: [
+                { "userId": userId },
+                { "item": { $regex: _search + '.*', $options: 'r' } }
+            ]
+        }
+    ).toArray();
+
+    var _ret = [];
+
+    if (itemResults.length > 0) {
+
+        for (var i = 0; i < itemResults.length; i++) {
+
+            var _alarms = await getAlarms(itemResults[i]);
+
+            _ret.push({
+                _id: itemResults[i]._id,
+                item: itemResults[i].item,
+                userId: itemResults[i].userId,
+                rx: itemResults[i].rx,
+                workout: itemResults[i].workout,
+                hy: itemResults[i].hy,
+                waterAmount: itemResults[i].waterAmount,
+                alarms: _alarms
+            });
+        }
+
+        var ret = {
+            results: _ret,
+            error: error,
+        };
+
+        res.status(200).json(ret);
+    }
+
+    else {
+        // refresh JWT
+        var refreshedToken = null;
+
+        try {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+
+        var ret = {
+            results: _ret,
+            error: "No records found",
+            jwtToken: refreshedToken
+        };
+
+        res.status(200).json(ret);
+    }
+
+});
+
+// Incoming: userId
+// Outgoing: all user Alarms[] w/ userId
+// Purpose: provides a JSON array of all the alarms that is associated to userId value
+app.post('/api/getAllUserAlarmsMobile', async (req, res, next) => {
+
+    const { userId } = req.body;
+    var error = '';
+
+    const db = client.db();
+    const alarmResults = await db.collection('alarms').find(
+        { "userId": userId }
+    ).toArray();
+
+    if (alarmResults.length > 0) {
+
+        var _retAlarms = [];
+
+        for (var i = 0; i < alarmResults.length; i++) {
+
+            var itemObj = await getItemUsingObjId(alarmResults[i].itemId);
+
+            _retAlarms.push({
+                _id: alarmResults[i]._id,
+                userId: alarmResults[i].userId,
+                itemId: alarmResults[i].itemId,
+                item: itemObj.item,
+                workout: itemObj.workout,
+                rx: itemObj.rx,
+                hy: itemObj.hy,
+                waterAmount: itemObj.waterAmount,
+                time: alarmResults[i].time,
+                monday: alarmResults[i].monday,
+                tuesday: alarmResults[i].tuesday,
+                wednesday: alarmResults[i].wednesday,
+                thursday: alarmResults[i].thursday,
+                friday: alarmResults[i].friday,
+                saturday: alarmResults[i].saturday,
+                sunday: alarmResults[i].sunday
+            });
+        }
+
+        var ret = {
+            Alarms: _retAlarms,
+            error: error
+        };
+
+        res.status(200).json(ret);
+    }
+
+    else {
+        error = "No records found";
+
+        var ret = {
+            results: _ret,
+            error: error
+        };
+
+        res.status(200).json(ret);
+    }
 });
 
 // For Heroku deployment
