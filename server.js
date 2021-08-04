@@ -30,6 +30,7 @@ const { query } = require('express');
 
 // path builder
 let pathBuilder = require('./frontend/src/Path');
+const { ConsoleSqlOutlined } = require('@ant-design/icons');
 
 // Incoming: userName, email
 // Outgoing: user (singular)
@@ -1781,8 +1782,8 @@ app.post('/api/getAllUserAlarmsMobile', async (req, res, next) => {
 
 
 // Incoming: userId
-// Outgoing: all user Alarms[] w/ userId
-// Purpose: provides a JSON array of all the alarms that is associated to userId value
+// Outgoing: all user rxAlarms[] w/ userId
+// Purpose: provides a JSON array of all the rx alarms that is associated to userId value
 app.post('/api/getAllRxAlarmsMobile', async (req, res, next) => {
 
     const { userId } = req.body;
@@ -1849,8 +1850,8 @@ app.post('/api/getAllRxAlarmsMobile', async (req, res, next) => {
 });
 
 // Incoming: userId
-// Outgoing: all user Alarms[] w/ userId
-// Purpose: provides a JSON array of all the alarms that is associated to userId value
+// Outgoing: all user workoutAlarms[] w/ userId
+// Purpose: provides a JSON array of all the workout alarms that is associated to userId value
 app.post('/api/getAllWorkoutAlarmsMobile', async (req, res, next) => {
 
     const { userId } = req.body;
@@ -1917,8 +1918,8 @@ app.post('/api/getAllWorkoutAlarmsMobile', async (req, res, next) => {
 });
 
 // Incoming: userId
-// Outgoing: all user Alarms[] w/ userId
-// Purpose: provides a JSON array of all the alarms that is associated to userId value
+// Outgoing: all user HyAlarms[] w/ userId
+// Purpose: provides a JSON array of all the hy alarms that is associated to userId value
 app.post('/api/getAllHyAlarmsMobile', async (req, res, next) => {
 
     const { userId } = req.body;
@@ -1985,6 +1986,52 @@ app.post('/api/getAllHyAlarmsMobile', async (req, res, next) => {
     }
 });
 
+// Incoming: userId
+// Outgoing: percentage different from current weight to desired weight
+// Purpose: Calculates the percentage difference from current weight to desired weight
+app.post('/api/getPercentageDifferenceMobile', async (req, res, next) => {
+
+    const { userId } = req.body;
+    var error = '';
+
+    var result = 0;
+    var startingWeight = 0;
+    var desiredWeight = 0;
+    var currentWeight = 0;
+
+    const db = client.db();
+    var weightObj = await db.collection('weights').findOne(
+        { "userId": userId }
+    )
+
+    if (weightObj) {
+        startingWeight = weightObj.startingWeight;
+        desiredWeight = weightObj.desiredWeight;
+        currentWeight = weightObj.weight;
+
+        console.log(startingWeight + " " + desiredWeight + " " + currentWeight);
+
+        let diff1 = Math.abs(startingWeight - desiredWeight);
+        let diff2 = Math.abs(startingWeight - currentWeight);
+        let result = Math.round(diff2 / diff1 * 100);
+
+        var ret = {
+            result: result,
+            error: error
+        };
+
+
+    } else {
+        error = "No records found";
+
+        var ret = {
+            result: result,
+            error: error
+        };
+    }
+
+    res.status(200).json(ret);
+});
 
 // For Heroku deployment
 // Server static assets if in production
