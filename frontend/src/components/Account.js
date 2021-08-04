@@ -12,7 +12,7 @@ class Account extends Component
     {
         return (
             <div>
-                <h3>{this.props.userData.firstName} {this.props.userData.lastName}</h3>
+                <div class="welcome-text">Welcome, {this.props.userData.firstName} {this.props.userData.lastName}</div>
             </div>
         );
     }
