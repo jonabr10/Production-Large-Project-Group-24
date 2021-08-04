@@ -1731,9 +1731,9 @@ app.post('/api/getAllUserAlarmsMobile', async (req, res, next) => {
         { "userId": userId }
     ).toArray();
 
-    if (alarmResults.length > 0) {
+    var _retAlarms = [];
 
-        var _retAlarms = [];
+    if (alarmResults.length > 0) {
 
         for (var i = 0; i < alarmResults.length; i++) {
 
@@ -1771,7 +1771,7 @@ app.post('/api/getAllUserAlarmsMobile', async (req, res, next) => {
         error = "No records found";
 
         var ret = {
-            results: _ret,
+            results: _retAlarms,
             error: error
         };
 
