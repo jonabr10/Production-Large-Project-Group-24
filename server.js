@@ -1779,6 +1779,213 @@ app.post('/api/getAllUserAlarmsMobile', async (req, res, next) => {
     }
 });
 
+
+// Incoming: userId
+// Outgoing: all user Alarms[] w/ userId
+// Purpose: provides a JSON array of all the alarms that is associated to userId value
+app.post('/api/getAllRxAlarmsMobile', async (req, res, next) => {
+
+    const { userId } = req.body;
+    var error = '';
+
+    const db = client.db();
+    const itemResults = await db.collection('items').find({
+        $and: [
+            { "userId": userId },
+            { "rx": true }
+        ]
+    }).toArray();
+
+    var _ret = [];
+
+    if (itemResults.length > 0) {
+
+        for (var i = 0; i < itemResults.length; i++) {
+
+            var _itemId = itemResults[i]._id.toString().trim();
+
+            const alarmResult = await db.collection('alarms').findOne({
+                $and: [
+                    { "userId": userId },
+                    { "itemId": _itemId }
+                ]
+            })
+
+            _ret.push({
+                _id: itemResults[i]._id,
+                userId: itemResults[i].userId,
+                itemId: alarmResult.itemId,
+                item: itemResults[i].item,
+                rx: itemResults[i].rx,
+                time: alarmResult.time,
+                monday: alarmResult.monday,
+                tuesday: alarmResult.tuesday,
+                wednesday: alarmResult.wednesday,
+                thursday: alarmResult.thursday,
+                friday: alarmResult.friday,
+                saturday: alarmResult.saturday,
+                sunday: alarmResult.sunday
+            });
+        }
+
+        var ret = {
+            Alarms: _ret,
+            error: error
+        };
+
+        res.status(200).json(ret);
+    }
+
+    else {
+        error = "No records found";
+
+        var ret = {
+            results: _ret,
+            error: error
+        };
+
+        res.status(200).json(ret);
+    }
+});
+
+// Incoming: userId
+// Outgoing: all user Alarms[] w/ userId
+// Purpose: provides a JSON array of all the alarms that is associated to userId value
+app.post('/api/getAllWorkoutAlarmsMobile', async (req, res, next) => {
+
+    const { userId } = req.body;
+    var error = '';
+
+    const db = client.db();
+    const itemResults = await db.collection('items').find({
+        $and: [
+            { "userId": userId },
+            { "workout": true }
+        ]
+    }).toArray();
+
+    var _ret = [];
+
+    if (itemResults.length > 0) {
+
+        for (var i = 0; i < itemResults.length; i++) {
+
+            var _itemId = itemResults[i]._id.toString().trim();
+
+            const alarmResult = await db.collection('alarms').findOne({
+                $and: [
+                    { "userId": userId },
+                    { "itemId": _itemId }
+                ]
+            })
+
+            _ret.push({
+                _id: itemResults[i]._id,
+                userId: itemResults[i].userId,
+                itemId: alarmResult.itemId,
+                item: itemResults[i].item,
+                workout: itemResults[i].workout,
+                time: alarmResult.time,
+                monday: alarmResult.monday,
+                tuesday: alarmResult.tuesday,
+                wednesday: alarmResult.wednesday,
+                thursday: alarmResult.thursday,
+                friday: alarmResult.friday,
+                saturday: alarmResult.saturday,
+                sunday: alarmResult.sunday
+            });
+        }
+
+        var ret = {
+            Alarms: _ret,
+            error: error
+        };
+
+        res.status(200).json(ret);
+    }
+
+    else {
+        error = "No records found";
+
+        var ret = {
+            results: _ret,
+            error: error
+        };
+
+        res.status(200).json(ret);
+    }
+});
+
+// Incoming: userId
+// Outgoing: all user Alarms[] w/ userId
+// Purpose: provides a JSON array of all the alarms that is associated to userId value
+app.post('/api/getAllHyAlarmsMobile', async (req, res, next) => {
+
+    const { userId } = req.body;
+    var error = '';
+
+    const db = client.db();
+    const itemResults = await db.collection('items').find({
+        $and: [
+            { "userId": userId },
+            { "hy": true }
+        ]
+    }).toArray();
+
+    var _ret = [];
+
+    if (itemResults.length > 0) {
+
+        for (var i = 0; i < itemResults.length; i++) {
+
+            var _itemId = itemResults[i]._id.toString().trim();
+
+            const alarmResult = await db.collection('alarms').findOne({
+                $and: [
+                    { "userId": userId },
+                    { "itemId": _itemId }
+                ]
+            })
+
+            _ret.push({
+                _id: itemResults[i]._id,
+                userId: itemResults[i].userId,
+                itemId: alarmResult.itemId,
+                item: itemResults[i].item,
+                hy: itemResults[i].hy,
+                waterAmount: itemResults[i].waterAmount,
+                time: alarmResult.time,
+                monday: alarmResult.monday,
+                tuesday: alarmResult.tuesday,
+                wednesday: alarmResult.wednesday,
+                thursday: alarmResult.thursday,
+                friday: alarmResult.friday,
+                saturday: alarmResult.saturday,
+                sunday: alarmResult.sunday
+            });
+        }
+
+        var ret = {
+            Alarms: _ret,
+            error: error
+        };
+
+        res.status(200).json(ret);
+    }
+
+    else {
+        error = "No records found";
+
+        var ret = {
+            results: _ret,
+            error: error
+        };
+
+        res.status(200).json(ret);
+    }
+});
+
+
 // For Heroku deployment
 // Server static assets if in production
 if (process.env.NODE_ENV === 'production') {
