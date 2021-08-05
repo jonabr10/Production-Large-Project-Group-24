@@ -2009,8 +2009,6 @@ app.post('/api/getPercentageDifferenceMobile', async (req, res, next) => {
         desiredWeight = weightObj.desiredWeight;
         currentWeight = weightObj.weight;
 
-        console.log(startingWeight + " " + desiredWeight + " " + currentWeight);
-
         let diff1 = Math.abs(startingWeight - desiredWeight);
         let diff2 = Math.abs(startingWeight - currentWeight);
         let result = Math.round(diff2 / diff1 * 100);
