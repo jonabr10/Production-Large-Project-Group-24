@@ -237,7 +237,7 @@ class Hydration extends Component {
                 <div class="float-right">
                     <div class="inner">
                         <div>
-                            <Statistic title="Hydration alarms you have set" value={numberOfHydrationAlarms} />
+                            <Statistic title="Hydration reminders you have set" value={numberOfHydrationAlarms} />
                         </div>
 
                         <img src={image} height="47%" width="47%" />

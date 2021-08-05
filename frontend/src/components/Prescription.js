@@ -229,7 +229,7 @@ class Prescription extends Component {
                 <div class="float-right">
                     <div class="inner">
                         <div>
-                            <Statistic title="Prescription alarms you have set" value={numberOfPrescriptionAlarms} />
+                            <Statistic title="Prescription reminders you have set" value={numberOfPrescriptionAlarms} />
                         </div>
 
                         <img src={image} height="47%" width="47%" />

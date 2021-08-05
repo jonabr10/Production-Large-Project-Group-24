@@ -229,7 +229,7 @@ class Workouts extends Component {
                 <div class="float-right">
                     <div class="inner">
                         <div>
-                            <Statistic title="Workout alarms you have set" value={numberOfWorkoutAlarms} />
+                            <Statistic title="Workout reminders you have set" value={numberOfWorkoutAlarms} />
                         </div>
 
                         <img src={image} height="47%" width="47%" />
